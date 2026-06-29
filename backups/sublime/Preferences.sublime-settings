@@ -1,0 +1,18 @@
+// Settings in here override those in "Default/Preferences.sublime-settings",
+// and are overridden in turn by syntax-specific settings.
+{
+    "ignored_packages": [
+        "Vintage",
+    ],
+    "vintageous_i_escape_jj":true,
+    "font_face": "GeistMono Nerd Font",
+    "font_size": 15,
+    "theme": "ayu-mirage.sublime-theme",
+    "color_scheme": "Packages/ayu/ayu-mirage.sublime-color-scheme",
+    "line_padding_bottom": 4,
+    "tab_size": 2, 
+    "line_padding_top": 4,
+    "neovintageous_build_version": 13200,
+    "vintageous_use_super_keys": false,
+    "index_files": true,
+}
