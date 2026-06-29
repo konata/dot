@@ -37,6 +37,14 @@ export DOT_HOME="${DOT_HOME:-$HOME/dot}"
 [[ -r "$DOT_HOME/shell/init.zsh" ]] && source "$DOT_HOME/shell/init.zsh"
 ```
 
+Starter files are copied manually:
+
+```sh
+cp ~/dot/examples/home/.zshrc ~/.zshrc
+cp ~/dot/examples/home/.vimrc ~/.vimrc
+cp ~/dot/examples/home/.gitconfig.local ~/.gitconfig.local
+```
+
 ## Commands
 
 ```sh
