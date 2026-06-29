@@ -5,6 +5,7 @@ import { chmod, copyFile, lstat, mkdir, readlink, rename, rm, symlink } from "no
 import { homedir } from "node:os"
 import { dirname, join, relative, resolve } from "node:path"
 import { $ } from "bun"
+import { desktop, doctor as desktopDoctor, restore as restoreDesktop, save as saveDesktop } from "./desktop/index.js"
 
 const dot = resolve(import.meta.dir, "..")
 const home = homedir()
@@ -40,12 +41,15 @@ function help() {
   console.log(`usage: dot <command>
 
 commands:
+	  desktop  list desktop app support snapshots
 	  doctor   show missing core tools and link state
 	  install  brew bundle install/Brewfile.core
 	  link     link home/* and config/*, copy bin/* into ~/bin
 	  macos    apply low-side-effect macOS defaults
 	  macos:opinionated
 	           apply personal macOS preferences
+	  restore  restore one desktop snapshot; pass --dry-run or --force
+	  save     save one desktop snapshot; pass --dry-run to preview
 	  unlink   remove links owned by this tree`)
 }
 
@@ -61,11 +65,9 @@ async function owned(target) {
 }
 
 async function same(source, target) {
-  try {
-    return await Bun.file(source).text() === await Bun.file(target).text()
-  } catch {
-    return false
-  }
+  return Promise.all([Bun.file(source).text(), Bun.file(target).text()])
+    .then(([left, right]) => left === right)
+    .catch(() => false)
 }
 
 async function files(root) {
@@ -113,7 +115,9 @@ async function unlink() {
   }
 }
 
-async function doctor() {
+async function doctor(id) {
+  if (id) return desktopDoctor(id)
+
   console.log(`dot: ${dot}`)
   console.log(`shim: ${existsSync(join(home, ".zshrc")) ? "~/.zshrc exists" : "~/.zshrc missing"}`)
   console.log(`bin: ${await binState()}`)
@@ -177,19 +181,25 @@ async function prepareBin() {
 }
 
 const tasks = {
+  desktop,
   doctor,
   install,
   link,
   unlink,
   macos,
   "macos:opinionated": () => macos("opinionated.zsh"),
+  restore: restoreDesktop,
+  save: saveDesktop,
 }
-const task = process.argv[2] ?? "help"
+const [task = "help", ...args] = process.argv.slice(2)
 
 if (task === "help" || task === "-h" || task === "--help") {
   help()
 } else if (tasks[task]) {
-  await tasks[task]()
+  await tasks[task](...args).catch(error => {
+    if (error?.message) console.error(error.message)
+    process.exitCode = error?.code ?? 1
+  })
 } else {
   help()
   process.exitCode = 2
