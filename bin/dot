@@ -1,0 +1,3 @@
+#!/bin/zsh
+exec bun "${DOT_HOME:-$HOME/dot}/scripts/dot.js" "$@"
+

@@ -1,0 +1,90 @@
+// Zed keymap
+//
+// For information on binding keys, see the Zed
+// documentation: https://zed.dev/docs/key-bindings
+//
+// To see the default key bindings run `zed: open default keymap`
+// from the command palette.
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      // "shift shift": "file_finder::Toggle"
+    },
+  },
+  {
+    "context": "Editor && vim_mode == insert",
+    "bindings": {
+      "j j": "vim::NormalBefore",
+    },
+  },
+  {
+    "context": "Editor && mode == full",
+    "bindings": {
+      "cmd-g": [
+        "buffer_search::Deploy",
+        {
+          "selection_search_enabled": true,
+        },
+      ],
+    },
+  },
+  {
+    "context": "Editor",
+    "bindings": {
+      "ctrl-alt-l": "editor::Format",
+    },
+  },
+  {
+    "context": "Editor",
+    "unbind": {
+      "cmd-shift-i": "editor::Format",
+    },
+  },
+  {
+    "context": "Editor && mode == full",
+    "unbind": {
+      "alt-cmd-l": [
+        "buffer_search::Deploy",
+        {
+          "selection_search_enabled": true,
+        },
+      ],
+    },
+  },
+  {
+    "context": "BufferSearchBar",
+    "bindings": {
+      "cmd-g": "search::ToggleSelection",
+    },
+  },
+  {
+    "context": "BufferSearchBar",
+    "unbind": {
+      "alt-cmd-l": "search::ToggleSelection",
+    },
+  },
+  {
+    "context": "Pane",
+    "bindings": {
+      "cmd-g": "search::ToggleSelection",
+    },
+  },
+  {
+    "context": "Pane",
+    "unbind": {
+      "alt-cmd-l": "search::ToggleSelection",
+    },
+  },
+  {
+    "context": "Workspace",
+    "unbind": {
+      "shift shift": "command_palette::Toggle",
+    },
+  },
+  {
+    "bindings": {
+      "cmd-i": ["agent::NewExternalAgentThread", { "agent": { "custom": { "name": "codex-acp" } } }],
+    },
+  },
+]

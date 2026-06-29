@@ -1,0 +1,88 @@
+[include]
+	path = ~/.gitconfig.local
+[alias]
+	st = status
+	ci = commit
+	dd = difftool
+  co = checkout
+  cob = checkout -b
+  del = branch -D
+  br = branch --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(contents:subject) %(color:green)(%(committerdate:relative)) [%(authorname)]' --sort=-committerdate
+  save = !git add -A && git commit -m 'chore: savepoint'
+  undo = reset HEAD~1 --mixed
+  res = !git reset --hard
+  done = !git push origin HEAD
+  lg = !git log --pretty=format:\"%C(magenta)%h%Creset -%C(red)%d%Creset %s %C(dim green)(%cr) [%an]\" --abbrev-commit -30
+  recent = !git branch -v --sort=-committerdate
+	rename = "!f() {\n  old=\"$1\"\n  new=\"$2\"\n  remote=\"${3:-origin}\"\n\n  if [ -z \"$old\" ] || [ -z \"$new\" ]; then\n    echo \"usage: git rename OLD NEW [REMOTE]\" >&2\n    return 2\n  fi\n\n  git branch -m \"$old\" \"$new\" &&\n  git push --atomic -u \"$remote\" \"$new\" \":$old\" &&\n  git fetch \"$remote\" --prune\n}; f"
+[color]
+	ui = true
+[core]
+	excludesfile = ~/ignore
+	pager = delta
+	symlinks = true
+	quotepath = false
+	longpaths = true
+	autocrlf = input
+	trustctime = false
+	attributesfile = ~/.attributes_global
+	ignorecase = true
+[init]
+	defaultBranch = main
+[diff]
+    tool = default-difftool
+[interactive]
+	diffFilter = delta --color-only
+[delta]
+	navigate = true
+	line-numbers = true
+[difftool "default-difftool"]
+    cmd = agy --wait --diff $REMOTE $LOCAL
+[difftool]
+	prompt = false
+[filter "lfs"]
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
+[protocol "file"]
+	allow = always
+[branch]
+	sort = -committerdate
+[diff "text"]
+	textconv = cat
+[mergetool]
+	keepBackup = false
+[lfs]
+	concurrenttransfers = 16
+	fetchrecentrefsdays = 0
+	pruneoffsetdays = 0
+	dialtimeout = 3
+	tlstimeout = 3
+[lfs "transfer"]
+	maxretries = 1
+	maxretrydelay = 2
+[merge "lfs-text"]
+	driver = git lfs merge-driver --ancestor %O --current %A --other %B --marker-size %L --output %A --program 'git merge-file --stdout --marker-size=%%L %%A %%O %%B >%%D'
+[rebase]
+	backend = merge
+[protocol]
+	version = 1
+[pull]
+	rebase = false
+[safe]
+	directory = *
+[push]
+	autoSetupRemote = true
+[checkout]
+	defaultRemote = origin
+[http]
+	cookiefile = ~/.gitcookies
+	sslBackend = openssl
+	postBuffer = 524288000
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential

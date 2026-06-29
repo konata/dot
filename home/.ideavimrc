@@ -1,0 +1,10 @@
+imap jj <ESC>
+set ideajoin
+let mapleader=" "
+set clipboard=ideaput
+map g<Space> :action AceAction<CR>
+map F<Space> :action AceTargetAction<CR>
+map f<Space> :action AceLineAction<CR>
+
+set easymotion
+
