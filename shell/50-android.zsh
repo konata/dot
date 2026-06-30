@@ -6,6 +6,21 @@ for tool in platform-tools build-tools/34.0.0 emulator cmdline-tools/latest/bin;
   prepend-path "$ANDROID_HOME/$tool"
 done
 
+pick() {
+  local serial
+  case "$1" in
+    emu)   serial="$(adb devices | awk '/^emulator-/{print $1; exit}')" ;;
+    usb)   serial="$(adb devices | awk '$2=="device" && $1!~/^emulator-/ && $1!~/:/{print $1; exit}')" ;;
+    unset) unset ANDROID_SERIAL; echo "ANDROID_SERIAL cleared"; return ;;
+    "")    echo "pick emu|usb|<serial>|unset  (now: ${ANDROID_SERIAL:-none})"; return ;;
+    *)     adb devices | grep -q "^$1[[:space:]]" || echo "warning: $1 not in adb devices"
+           serial="$1" ;;
+  esac
+  [[ -n "$serial" ]] || { echo "no $1 device"; return 1; }
+  export ANDROID_SERIAL="$serial"
+  echo "ANDROID_SERIAL=$serial"
+}
+
 _activities() {
   adb shell dumpsys activity activities
 }
