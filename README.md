@@ -9,8 +9,8 @@ Core packages are in `install/Brewfile.core`; optional GUI apps and fonts are in
 `install/Brewfile.gui.optional`.
 
 ```sh
-bun run install
 bun run link
+bun run install
 ```
 
 ## Layout
@@ -50,41 +50,29 @@ cp ~/dot/examples/home/.gitconfig.local ~/.gitconfig.local
 Roughly the order you'd run on a fresh machine:
 
 ```sh
-# 1. install core packages from install/Brewfile.core
-bun run install
+# 0. prerequisite — dot is a bun script, so bun must exist first.
+#    install Homebrew, then:
+brew install bun
 
-# 2. symlink home/ into ~, config/ into ~/.config, copy bin/ into ~/bin
-#    existing regular files are moved aside to <name>.bak.<stamp> first
-#    this also puts the `dot` wrapper on your PATH (~/bin/dot)
-bun run link
+# bootstrap runs via `bun run` from the repo; dot isn't on PATH yet
+bun run link              # symlink home/ + config/, copy bin/ into ~/bin
+bun run install           # brew bundle install/Brewfile.core
+bun run macos             # macOS defaults (opinionated layers personal prefs)
+bun run macos:opinionated
 
-# from here `dot <command>` works directly
+# set up the ~/.zshrc shim (below) and open a new shell so ~/bin/dot is on PATH.
+# from here, day to day, `dot <command>` works from anywhere:
 
-# 3. apply macOS defaults (opinionated layers on personal preferences)
-dot macos
-dot macos:opinionated
+dot doctor                # core tools + link state; `dot doctor cursor` for one recipe
+dot desktop               # list app recipes with snapshot state
 
-# 4. sanity check: core tools present, links owned by this tree
-dot doctor
-
-# 5. list desktop apps that have a recipe, with snapshot state
-dot desktop
-
-# 6. restore an app's config onto this machine
-#    --dry previews; without it, changed files move aside to <name>.bak.<stamp>
-dot restore cursor --dry
+dot restore cursor --dry  # preview; without --dry, changed files move to <name>.bak.<stamp>
 dot restore cursor
 
-# later: after editing settings, snapshot them back into the repo
-#    --dry previews; a repeat save with no changes prints "nothing to save"
-dot save cursor --dry
+dot save cursor --dry     # preview; a repeat save with no changes prints "nothing to save"
 dot save cursor
 
-# inspect one recipe: resolved paths, availability, which files exist
-dot doctor cursor
-
-# tear down: remove every symlink this repo owns
-dot unlink
+dot unlink                # remove every symlink this repo owns
 ```
 
 ## Desktop Backups
