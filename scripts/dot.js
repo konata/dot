@@ -6,6 +6,7 @@ import { homedir } from "node:os"
 import { dirname, join, relative, resolve } from "node:path"
 import { $ } from "bun"
 import { desktop, doctor as desktopDoctor, restore as restoreDesktop, save as saveDesktop } from "./desktop/index.js"
+import { bold, dim, green, mark, red, yellow } from "./ui.js"
 
 const dot = resolve(import.meta.dir, "..")
 const home = homedir()
@@ -101,7 +102,7 @@ async function connect(source, target) {
 
   if (stat?.isSymbolicLink()) {
     const current = resolve(dirname(target), await readlink(target))
-    if (current === source) return console.log(`ok ${target}`)
+    if (current === source) return console.log(`${mark.ok} ${dim(relative(home, target))}`)
     await rm(target)
   } else if (stat) {
     await rename(target, `${target}.bak.${stamp}`)
@@ -109,41 +110,42 @@ async function connect(source, target) {
 
   await mkdir(dirname(target), { recursive: true })
   await symlink(source, target)
-  console.log(`link ${target} -> ${source}`)
+  console.log(`${mark.add} ${dim(relative(home, target))} ${dim(`→ ${relative(dot, source)}`)}`)
 }
 
 async function link() {
   for (const pair of await links()) await connect(...pair)
   await copyBins()
-  console.log("examples/ contains starter files; copy them manually when needed")
+  console.log(dim("examples/ contains starter files; copy them manually when needed"))
 }
 
 async function unlink() {
   for (const [, target] of await links()) {
     if (!(await owned(target))) continue
     await rm(target)
-    console.log(`unlink ${target}`)
+    console.log(`${mark.drop} ${dim(relative(home, target))}`)
   }
 }
 
 async function doctor(id) {
   if (id) return desktopDoctor(id)
 
-  console.log(`dot: ${dot}`)
-  console.log(`shim: ${existsSync(join(home, ".zshrc")) ? "~/.zshrc exists" : "~/.zshrc missing"}`)
-  console.log(`bin: ${await binState()}`)
+  console.log(bold("dot") + " " + dim(dot))
+  console.log(`${dim("shim")} ${existsSync(join(home, ".zshrc")) ? green("~/.zshrc") : red("~/.zshrc missing")}`)
+  console.log(`${dim("bin ")} ${dim(await binState())}`)
 
   for (const name of commands) {
-    console.log(`${command(name) ? "ok" : "missing"} ${name}`)
+    console.log(`${command(name) ? mark.ok : mark.bad} ${name}`)
   }
 
   for (const [source, target] of await links()) {
-    const name = relative(dot, source)
-    console.log(`${await owned(target) ? "owned" : "external"} ${name} -> ${target}`)
+    const linked = await owned(target)
+    console.log(`${linked ? mark.ok : mark.change} ${relative(dot, source)} ${dim(`→ ${relative(home, target)}`)}${linked ? "" : yellow(" external")}`)
   }
 
   for (const [source, target] of await bins()) {
-    console.log(`${await same(source, target) ? "copied" : "external"} ${relative(dot, source)} -> ${target}`)
+    const copied = await same(source, target)
+    console.log(`${copied ? mark.ok : mark.change} ${relative(dot, source)} ${dim(`→ ${relative(home, target)}`)}${copied ? "" : yellow(" external")}`)
   }
 }
 
@@ -165,7 +167,7 @@ async function copyBins() {
   for (const [source, target] of await bins()) {
     await copyFile(source, target)
     await chmod(target, 0o755)
-    console.log(`copy ${target} <- ${source}`)
+    console.log(`${mark.add} ${dim(relative(home, target))}`)
   }
 }
 
@@ -208,7 +210,7 @@ if (task === "help" || task === "-h" || task === "--help") {
   help()
 } else if (tasks[task]) {
   await tasks[task](...args).catch(error => {
-    if (error?.message) console.error(error.message)
+    if (error?.message) console.error(`${mark.bad} ${red(error.message)}`)
     process.exitCode = error?.code ?? 1
   })
 } else {

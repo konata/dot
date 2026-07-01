@@ -3,6 +3,7 @@ import { existsSync } from "node:fs"
 import { copyFile, lstat, mkdir, readdir, rename, rm } from "node:fs/promises"
 import { homedir } from "node:os"
 import { dirname, join, relative, resolve } from "node:path"
+import { bold, dim, green, mark, red } from "../ui.js"
 
 const dot = resolve(import.meta.dir, "../..")
 const home = homedir()
@@ -55,12 +56,12 @@ function context(recipe, options = {}) {
       if (result.status !== 0) throw new CliError(`${tool} ${args.join(" ")} failed`)
     },
     async write(name, text) {
-      if (options.dry) { changes.push(name); return console.log(`save generated ${relative(dot, repo(name))}`) }
+      if (options.dry) { changes.push(name); return console.log(`${mark.change} ${dim(relative(dot, repo(name)))} ${dim("(regenerate)")}`) }
       if (existsSync(repo(name)) && (await Bun.file(repo(name)).text()) === text) return
       changes.push(name)
       await mkdir(dirname(repo(name)), { recursive: true })
       await Bun.write(repo(name), text)
-      console.log(`write ${relative(dot, repo(name))}`)
+      console.log(`${mark.add} ${dim(relative(dot, repo(name)))}`)
     },
     async lines(name) {
       return Bun.file(repo(name)).text()
@@ -79,7 +80,8 @@ async function available(recipe, state = context(recipe)) {
 export async function list(recipes) {
   for (const recipe of recipes) {
     const state = context(recipe)
-    console.log(`${await available(recipe, state) ? "ok" : "missing"} ${recipe.id} (${label(recipe)})`)
+    const live = await available(recipe, state)
+    console.log(`${live ? mark.ok : mark.bad} ${recipe.id} ${dim(`(${label(recipe)})`)}`)
   }
 }
 
@@ -87,14 +89,15 @@ export async function doctor(recipes, id) {
   const recipe = known(recipes, id)
   const state = context(recipe)
 
-  console.log(`${recipe.id}: ${label(recipe)}`)
-  console.log(`app: ${appPath(recipe) ?? "missing"}`)
-  console.log(`root: ${state.target()}`)
-  console.log(`repo: ${state.repo()}`)
-  console.log(`available: ${await available(recipe, state) ? "yes" : "no"}`)
+  const live = await available(recipe, state)
+  console.log(bold(`${recipe.id} ${dim(`(${label(recipe)})`)}`))
+  console.log(`${dim("app ")} ${appPath(recipe) ?? red("missing")}`)
+  console.log(`${dim("root")} ${dim(state.target())}`)
+  console.log(`${dim("repo")} ${dim(state.repo())}`)
+  console.log(`${dim("live")} ${live ? green("yes") : red("no")}`)
 
   for (const name of recipe.files ?? []) {
-    console.log(`${existsSync(state.target(name)) ? "source" : "missing"} ${name}`)
+    console.log(`${existsSync(state.target(name)) ? mark.ok : mark.skip} ${name}`)
   }
 }
 
@@ -111,7 +114,7 @@ export async function save(recipes, id, ...args) {
 
   await snapshot(recipe, state)
   await (options.dry ? recipe["@save"]?.(state) : recipe.save?.(state))
-  if (!state.changes.length) console.log(`nothing to save for ${recipe.id}`)
+  if (!state.changes.length) console.log(`${mark.skip} ${dim(`nothing to save for ${recipe.id}`)}`)
 }
 
 export async function restore(recipes, id, ...args) {
@@ -133,7 +136,7 @@ async function snapshot(recipe, state) {
     const source = state.target(name)
     const stat = await lstat(source).catch(() => null)
     // a declared file absent locally may just be uncreated on this machine — keep any existing backup
-    if (!stat) { console.log(`skip missing ${source}`); continue }
+    if (!stat) { console.log(`${mark.skip} ${dim(`skip missing ${relative(home, source)}`)}`); continue }
     await mirror(source, state.repo(name), state)
   }
 }
@@ -159,7 +162,7 @@ async function mirror(source, dest, state) {
     for (const entry of destStat ? await readdir(dest, { withFileTypes: true }) : []) {
       if (entry.name === ".DS_Store" || names.has(entry.name)) continue
       state.changes.push(join(dest, entry.name))
-      console.log(`remove ${relative(dot, join(dest, entry.name))}`)
+      console.log(`${mark.drop} ${dim(relative(dot, join(dest, entry.name)))}`)
       if (!state.dry) await rm(join(dest, entry.name), { recursive: true, force: true })
     }
     return
@@ -172,7 +175,7 @@ async function mirror(source, dest, state) {
   if (destStat && (await same(source, dest))) return
 
   state.changes.push(dest)
-  console.log(`${destStat ? "update" : "write"} ${relative(dot, dest)}`)
+  console.log(`${destStat ? mark.change : mark.add} ${dim(relative(dot, dest))}`)
   if (state.dry) return
   await mkdir(dirname(dest), { recursive: true })
   await copyFile(source, dest)
@@ -182,7 +185,7 @@ async function recover(recipe, state) {
   if (!recipe.files?.length) return
 
   const entries = await plan(recipe, state.repo, state.target)
-  if (!entries.length) return console.log(`nothing to restore for ${recipe.id}`)
+  if (!entries.length) return console.log(`${mark.skip} ${dim(`nothing to restore for ${recipe.id}`)}`)
 
   report(entries)
   if (state.dry) return
@@ -203,8 +206,8 @@ async function recover(recipe, state) {
   }
 
   if (saved.length) {
-    console.log("moved existing files aside before overwrite:")
-    for (const path of saved) console.log(`  ${path}`)
+    console.log(dim("moved aside before overwrite:"))
+    for (const path of saved) console.log(`  ${mark.drop} ${dim(path)}`)
   }
 }
 
@@ -221,8 +224,10 @@ async function plan(recipe, repo, target) {
   return entries
 }
 
+const glyph = { mkdir: mark.add, write: mark.add, overwrite: mark.change }
+
 function report(entries) {
-  for (const { action, target } of entries) console.log(`${action} ${target}`)
+  for (const { action, target } of entries) console.log(`${glyph[action] ?? mark.skip} ${dim(relative(home, target))}`)
 }
 
 async function same(left, right) {
