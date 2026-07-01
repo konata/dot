@@ -5,7 +5,7 @@ import { chmod, copyFile, lstat, mkdir, readlink, rename, rm, symlink } from "no
 import { homedir } from "node:os"
 import { dirname, join, relative, resolve } from "node:path"
 import { $ } from "bun"
-import { desktop, doctor as desktopDoctor, restore as restoreDesktop, save as saveDesktop } from "./desktop/index.js"
+import { desktop, doctor as desktopDoctor, restore as restoreDesktop, save as saveDesktop, status as desktopStatus } from "./desktop/index.js"
 import { bold, dim, green, mark, red, yellow } from "./ui.js"
 
 const dot = resolve(import.meta.dir, "..")
@@ -53,6 +53,7 @@ function help() {
       ["restore", "restore one snapshot; existing files move aside to .bak; --dry to preview"],
     ]],
     ["status", [
+      ["status", "drift: repo uncommitted changes + live app config vs backup"],
       ["doctor", "core tool + link state, or doctor <app> to inspect one recipe"],
     ]],
   ]
@@ -149,6 +150,16 @@ async function doctor(id) {
   }
 }
 
+async function status(id) {
+  const porcelain = spawnSync("git", ["-C", dot, "status", "--porcelain"], { encoding: "utf8" }).stdout.trim()
+  console.log(bold("repo") + dim(" — uncommitted"))
+  if (!porcelain) console.log(`  ${mark.ok} ${dim("clean")}`)
+  else for (const line of porcelain.split("\n")) console.log(`  ${mark.change} ${dim(line.trimStart())}`)
+
+  console.log(bold("apps") + dim(" — live vs backup"))
+  await desktopStatus(id)
+}
+
 async function install() {
   await $`brew bundle --file=${join(dot, "install", "Brewfile.core")}`
 }
@@ -203,6 +214,7 @@ const tasks = {
   "macos:opinionated": () => macos("opinionated.zsh"),
   restore: restoreDesktop,
   save: saveDesktop,
+  status,
 }
 const [task = "help", ...args] = process.argv.slice(2)
 

@@ -57,6 +57,7 @@ dot macos                 # macOS defaults; macos:opinionated adds personal pref
 dot macos:opinionated
 dot doctor                # core tools + link state; `dot doctor cursor` for one recipe
 dot desktop               # list app recipes with snapshot state
+dot status                # drift: repo uncommitted changes + live app config vs backup
 
 dot restore cursor --dry  # preview; without --dry, changed files move to <name>.bak.<stamp>
 dot restore cursor
@@ -79,6 +80,11 @@ pruning stale entries and reporting `nothing to save` when in sync. `restore
 <app>` skips files already matching, and for the rest moves the existing file
 aside to `<name>.bak.<stamp>` before writing, then reports what moved. There is
 intentionally no `restore all`. Both commands support `--dry`.
+
+`status` reports drift in two parts: the repo's uncommitted changes (`git`), and
+per recipe whether the live config still matches its backup — the latter catches
+edits you made but never saved, which git can't see because the app config is
+copied, not symlinked. Extension lists aren't diffed; run `save` to refresh them.
 
 Each recipe declares `files` for normal file-based backup, plus optional
 `available`, `save`, and `restore` hooks; `@save` / `@restore` are dry-run-only

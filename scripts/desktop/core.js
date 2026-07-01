@@ -42,6 +42,7 @@ function context(recipe, options = {}) {
 
   return {
     dry: options.dry ?? false,
+    quiet: options.quiet ?? false,
     changes,
     app: () => Boolean(appPath(recipe)),
     command,
@@ -56,12 +57,12 @@ function context(recipe, options = {}) {
       if (result.status !== 0) throw new CliError(`${tool} ${args.join(" ")} failed`)
     },
     async write(name, text) {
-      if (options.dry) { changes.push(name); return console.log(`${mark.change} ${dim(relative(dot, repo(name)))} ${dim("(regenerate)")}`) }
+      if (options.dry) { changes.push(name); if (!options.quiet) console.log(`${mark.change} ${dim(relative(dot, repo(name)))} ${dim("(regenerate)")}`); return }
       if (existsSync(repo(name)) && (await Bun.file(repo(name)).text()) === text) return
       changes.push(name)
       await mkdir(dirname(repo(name)), { recursive: true })
       await Bun.write(repo(name), text)
-      console.log(`${mark.add} ${dim(relative(dot, repo(name)))}`)
+      if (!options.quiet) console.log(`${mark.add} ${dim(relative(dot, repo(name)))}`)
     },
     async lines(name) {
       return Bun.file(repo(name)).text()
@@ -101,6 +102,17 @@ export async function doctor(recipes, id) {
   }
 }
 
+// live-vs-backup drift per recipe: a quiet dry snapshot, reporting whether a save would change anything
+export async function status(recipes, id) {
+  for (const recipe of id ? [known(recipes, id)] : recipes) {
+    const state = context(recipe, { dry: true, quiet: true })
+    if (!(await available(recipe, state))) { console.log(`  ${mark.skip} ${recipe.id} ${dim("(unavailable)")}`); continue }
+    await snapshot(recipe, state)
+    const drift = state.changes.length
+    console.log(`  ${drift ? mark.change : mark.ok} ${recipe.id} ${dim(drift ? `drift — dot save ${recipe.id}` : "in sync")}`)
+  }
+}
+
 export async function save(recipes, id, ...args) {
   const recipe = known(recipes, id)
   const options = {
@@ -136,7 +148,7 @@ async function snapshot(recipe, state) {
     const source = state.target(name)
     const stat = await lstat(source).catch(() => null)
     // a declared file absent locally may just be uncreated on this machine — keep any existing backup
-    if (!stat) { console.log(`${mark.skip} ${dim(`skip missing ${relative(home, source)}`)}`); continue }
+    if (!stat) { if (!state.quiet) console.log(`${mark.skip} ${dim(`skip missing ${relative(home, source)}`)}`); continue }
     await mirror(source, state.repo(name), state)
   }
 }
@@ -162,7 +174,7 @@ async function mirror(source, dest, state) {
     for (const entry of destStat ? await readdir(dest, { withFileTypes: true }) : []) {
       if (entry.name === ".DS_Store" || names.has(entry.name)) continue
       state.changes.push(join(dest, entry.name))
-      console.log(`${mark.drop} ${dim(relative(dot, join(dest, entry.name)))}`)
+      if (!state.quiet) console.log(`${mark.drop} ${dim(relative(dot, join(dest, entry.name)))}`)
       if (!state.dry) await rm(join(dest, entry.name), { recursive: true, force: true })
     }
     return
@@ -175,7 +187,7 @@ async function mirror(source, dest, state) {
   if (destStat && (await same(source, dest))) return
 
   state.changes.push(dest)
-  console.log(`${destStat ? mark.change : mark.add} ${dim(relative(dot, dest))}`)
+  if (!state.quiet) console.log(`${destStat ? mark.change : mark.add} ${dim(relative(dot, dest))}`)
   if (state.dry) return
   await mkdir(dirname(dest), { recursive: true })
   await copyFile(source, dest)
