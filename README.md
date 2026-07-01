@@ -72,66 +72,75 @@ dot unlink                # remove every symlink this repo owns
 
 Desktop app recipes live in `desktop/*.ts` and are discovered automatically; each
 calls the typed `recipe()` factory (`scripts/desktop/recipe.ts`). Snapshots are
-stored in `backups/<app>`. Supported apps are currently `cursor`, `kiro`, and
-`sublime`.
+stored in `backups/<app>`. Supported apps are currently `code`, `cursor`, `kiro`,
+and `sublime`.
 
 `save <app>` diffs each file against its backup and copies only what changed,
 pruning stale entries and reporting `nothing to save` when in sync. `restore
 <app>` skips files already matching, and for the rest moves the existing file
-aside to `<name>.bak.<stamp>` before writing, then reports what moved. There is
-intentionally no `restore all`. Both commands support `--dry`.
+aside to `<name>.bak.<stamp>` before writing. Both take `--dry`. Binary files are
+backed up too, with a warning. There is intentionally no `restore all`.
 
 `status` reports drift in two parts: the repo's uncommitted changes (`git`), and
 per recipe whether the live config still matches its backup — the latter catches
 edits you made but never saved, which git can't see because the app config is
 copied, not symlinked. Extension lists aren't diffed; run `save` to refresh them.
 
-Each recipe declares `files` for normal file-based backup, plus optional
-`available`, `save`, and `restore` hooks; `@save` / `@restore` are dry-run-only
-previews. Cursor, Code, and Kiro use this to save extension IDs into
-`extensions.txt` and reinstall them on restore.
-
-```ts
-// desktop/code.ts
-import { recipe } from "../scripts/desktop/recipe"
-
-export default recipe("code", "Visual Studio Code.app", "Code/User",
-  ["settings.json"],
-  {
-    available: c => c.app() && c.command("code"),
-    async save(c) {
-      const ids = (await c.output("code", ["--list-extensions"])).trim()
-      await c.write("extensions.txt", `${ids}\n`)
-    },
-    async restore(c) {
-      for (const id of await c.lines("extensions.txt")) await c.run("code", ["--install-extension", id])
-    },
-    async ["@save"](c) { await c.write("extensions.txt") },
-  })
-```
-
-`recipe(id, app, root, files, hooks)`:
+`recipe(id, app, root, options?)`:
 
 - `id` — the command name and the `backups/<id>` snapshot folder
 - `app` — the `.app` bundle name, looked up under `/Applications` and
   `~/Applications` to decide availability
 - `root` — path **under `~/Library/Application Support`** holding the app's
   config (`"Code/User"` → `~/Library/Application Support/Code/User`)
-- `files` — names (files or directories) under `root` to back up
-- `hooks` — optional `available` / `save` / `restore`, plus dry-only
-  `@save` / `@restore`
+- `options.files` — include patterns (names, directories, or `Bun.Glob` globs)
+  relative to `root`; **omit to take everything under `root`**. A directory is
+  backed up recursively, so a folder of many or unpredictably-named files just
+  needs the folder name.
+- `options.ignore` — exclude globs applied after the includes (exclude wins)
+- `options.available` / `save` / `restore` — optional hooks; `@save` / `@restore`
+  are dry-run-only previews
 
-A file-only recipe needs just the first three arguments — `sublime.ts` passes a
-`files` list and no hooks.
-
-A `files` entry can also be a directory: it is backed up and restored
-recursively, so a folder of many or unpredictably-named files (say a Clash
-`profiles/` directory of proxy `.yaml`s) just needs the folder name, not each
-file.
+Only `files`, no `ignore` — list exactly what to back up:
 
 ```ts
-export default recipe("clash", "Clash Verge.app", "io.github.clash-verge-rev.clash-verge",
-  ["profiles"])  // whole folder, any number of files, no hooks
+export default recipe("sublime", "Sublime Text.app", "Sublime Text/Packages/User", {
+  files: ["Preferences.sublime-settings", "Default (OSX).sublime-keymap"],
+})
+```
+
+Only `ignore`, no `files` — take everything under `root` minus the noise:
+
+```ts
+export default recipe("clash", "Clash Verge.app", "io.github.clash-verge-rev.clash-verge", {
+  ignore: ["*.log", "cache/**"],
+})
+```
+
+Both — a folder of proxy configs, minus its logs:
+
+```ts
+export default recipe("clash", "Clash Verge.app", "io.github.clash-verge-rev.clash-verge", {
+  files: ["profiles"],
+  ignore: ["profiles/*.log"],
+})
+```
+
+With hooks — Code also saves its extension IDs and reinstalls them on restore:
+
+```ts
+export default recipe("code", "Visual Studio Code.app", "Code/User", {
+  files: ["settings.json"],
+  available: c => c.app() && c.command("code"),
+  async save(c) {
+    const ids = (await c.output("code", ["--list-extensions"])).trim()
+    await c.write("extensions.txt", `${ids}\n`)
+  },
+  async restore(c) {
+    for (const id of await c.lines("extensions.txt")) await c.run("code", ["--install-extension", id])
+  },
+  async ["@save"](c) { await c.write("extensions.txt") },
+})
 ```
 
 ## Private Layer

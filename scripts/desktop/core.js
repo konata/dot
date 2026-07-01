@@ -1,9 +1,9 @@
 import { spawnSync } from "node:child_process"
 import { existsSync } from "node:fs"
-import { copyFile, lstat, mkdir, readdir, rename, rm } from "node:fs/promises"
+import { copyFile, lstat, mkdir, rename, rm } from "node:fs/promises"
 import { homedir } from "node:os"
 import { dirname, join, relative, resolve } from "node:path"
-import { bold, dim, green, mark, red } from "../ui.js"
+import { bold, dim, green, mark, red, yellow } from "../ui.js"
 
 const dot = resolve(import.meta.dir, "../..")
 const home = homedir()
@@ -97,9 +97,10 @@ export async function doctor(recipes, id) {
   console.log(`${dim("repo")} ${dim(state.repo())}`)
   console.log(`${dim("live")} ${live ? green("yes") : red("no")}`)
 
-  for (const name of recipe.files ?? []) {
-    console.log(`${existsSync(state.target(name)) ? mark.ok : mark.skip} ${name}`)
-  }
+  if (recipe.ignore.length) console.log(`${dim("ignore")} ${dim(recipe.ignore.join(", "))}`)
+
+  if (!recipe.files.length) console.log(`${dim("files")} ${dim("all under root")}`)
+  else for (const name of recipe.files) console.log(`${existsSync(state.target(name)) ? mark.ok : mark.skip} ${name}`)
 }
 
 // live-vs-backup drift per recipe: a quiet dry snapshot, reporting whether a save would change anything
@@ -143,103 +144,35 @@ export async function restore(recipes, id, ...args) {
   await (options.dry ? recipe["@restore"]?.(state) : recipe.restore?.(state))
 }
 
-async function snapshot(recipe, state) {
-  for (const name of recipe.files ?? []) {
-    const source = state.target(name)
-    const stat = await lstat(source).catch(() => null)
-    // a declared file absent locally may just be uncreated on this machine — keep any existing backup
-    if (!stat) { if (!state.quiet) console.log(`${mark.skip} ${dim(`skip missing ${relative(home, source)}`)}`); continue }
-    await mirror(source, state.repo(name), state)
+const GLOBBY = /[*?[\]{}]/
+
+// expand include patterns into a set of file paths relative to base (a bare dir means everything under it)
+async function expand(patterns, base) {
+  const files = new Set()
+  if (!existsSync(base)) return files
+  for (const pattern of patterns) {
+    let glob = pattern
+    if (!GLOBBY.test(pattern)) {
+      const stat = await lstat(join(base, pattern)).catch(() => null)
+      if (!stat) continue
+      if (!stat.isDirectory()) { files.add(pattern); continue }
+      glob = `${pattern}/**`
+    }
+    for await (const rel of new Bun.Glob(glob).scan({ cwd: base, dot: true, onlyFiles: true })) files.add(rel)
   }
+  return files
 }
 
-// sync dest to match source, content-aware: copy only what differs, drop what source no longer has
-async function mirror(source, dest, state) {
-  const sourceStat = await lstat(source)
-  let destStat = await lstat(dest).catch(() => null)
-
-  if (sourceStat.isDirectory()) {
-    if (destStat && !destStat.isDirectory()) {
-      if (!state.dry) await rm(dest, { recursive: true, force: true })
-      destStat = null
-    }
-    if (!destStat && !state.dry) await mkdir(dest, { recursive: true })
-
-    const names = new Set()
-    for (const entry of await readdir(source, { withFileTypes: true })) {
-      if (entry.name === ".DS_Store") continue
-      names.add(entry.name)
-      await mirror(join(source, entry.name), join(dest, entry.name), state)
-    }
-    for (const entry of destStat ? await readdir(dest, { withFileTypes: true }) : []) {
-      if (entry.name === ".DS_Store" || names.has(entry.name)) continue
-      state.changes.push(join(dest, entry.name))
-      if (!state.quiet) console.log(`${mark.drop} ${dim(relative(dot, join(dest, entry.name)))}`)
-      if (!state.dry) await rm(join(dest, entry.name), { recursive: true, force: true })
-    }
-    return
-  }
-
-  if (destStat?.isDirectory()) {
-    if (!state.dry) await rm(dest, { recursive: true, force: true })
-    destStat = null
-  }
-  if (destStat && (await same(source, dest))) return
-
-  state.changes.push(dest)
-  if (!state.quiet) console.log(`${destStat ? mark.change : mark.add} ${dim(relative(dot, dest))}`)
-  if (state.dry) return
-  await mkdir(dirname(dest), { recursive: true })
-  await copyFile(source, dest)
+function excluder(recipe) {
+  const globs = ["**/.DS_Store", ...recipe.ignore].map(pattern => new Bun.Glob(pattern))
+  return rel => globs.some(glob => glob.match(rel))
 }
 
-async function recover(recipe, state) {
-  if (!recipe.files?.length) return
-
-  const entries = await plan(recipe, state.repo, state.target)
-  if (!entries.length) return console.log(`${mark.skip} ${dim(`nothing to restore for ${recipe.id}`)}`)
-
-  report(entries)
-  if (state.dry) return
-
-  const stamp = new Date().toISOString().replaceAll(/[-:T.Z]/g, "").slice(0, 14)
-  const saved = []
-  for (const { action, source, target } of entries) {
-    if (action === "mkdir") {
-      await mkdir(target, { recursive: true })
-      continue
-    }
-    if (action === "overwrite") {
-      const backup = `${target}.bak.${stamp}`
-      await rename(target, backup)
-      saved.push(relative(home, backup))
-    }
-    await copy(source, target, { overwrite: true })
-  }
-
-  if (saved.length) {
-    console.log(dim("moved aside before overwrite:"))
-    for (const path of saved) console.log(`  ${mark.drop} ${dim(path)}`)
-  }
-}
-
-async function plan(recipe, repo, target) {
-  const entries = []
-
-  for (const name of recipe.files ?? []) {
-    const source = repo(name)
-    const stat = await lstat(source).catch(() => null)
-    if (!stat) continue
-    await walk(source, target(name), entries)
-  }
-
-  return entries
-}
-
-const glyph = { mkdir: mark.add, write: mark.add, overwrite: mark.change }
-
-function report(entries) {
-  for (const { action, target } of entries) console.log(`${glyph[action] ?? mark.skip} ${dim(relative(home, target))}`)
+// the files a recipe covers under base: includes (default everything) minus ignore
+async function selection(recipe, base) {
+  const excluded = excluder(recipe)
+  const files = await expand(recipe.files.length ? recipe.files : ["**"], base)
+  return [...files].filter(rel => !excluded(rel)).sort()
 }
 
 async function same(left, right) {
@@ -247,54 +180,70 @@ async function same(left, right) {
   return a.length === b.length && a.every((byte, index) => byte === b[index])
 }
 
-async function walk(source, target, entries) {
-  const sourceStat = await lstat(source)
-  const targetStat = await lstat(target).catch(() => null)
-
-  if (sourceStat.isDirectory()) {
-    if (targetStat && !targetStat.isDirectory()) {
-      entries.push({ action: "overwrite", source, target })
-      return
-    }
-
-    if (!targetStat) entries.push({ action: "mkdir", source, target })
-
-    for (const entry of await readdir(source, { withFileTypes: true })) {
-      if (entry.name === ".DS_Store") continue
-      await walk(join(source, entry.name), join(target, entry.name), entries)
-    }
-    return
-  }
-
-  if (!targetStat) return entries.push({ action: "write", source, target })
-  if (targetStat.isDirectory()) return entries.push({ action: "overwrite", source, target })
-  if (await same(source, target)) return
-  entries.push({ action: "overwrite", source, target })
+async function binary(path) {
+  return (await Bun.file(path).bytes()).subarray(0, 8000).includes(0)
 }
 
-async function copy(source, target, options = {}) {
-  const sourceStat = await lstat(source)
-  const targetStat = await lstat(target).catch(() => null)
-
-  if (sourceStat.isDirectory()) {
-    if (targetStat && !targetStat.isDirectory()) {
-      if (!options.overwrite) throw new Error(`target exists: ${target}`)
-      await rm(target, { recursive: true, force: true })
+async function snapshot(recipe, state) {
+  const rels = await selection(recipe, state.target())
+  for (const rel of rels) {
+    const source = state.target(rel)
+    const dest = state.repo(rel)
+    const present = existsSync(dest)
+    if (present && (await same(source, dest))) continue
+    state.changes.push(dest)
+    if (!state.quiet) {
+      console.log(`${present ? mark.change : mark.add} ${dim(relative(dot, dest))}`)
+      if (await binary(source)) console.warn(`  ${mark.bad} ${yellow(`binary — ${relative(home, source)}`)}`)
     }
+    if (state.dry) continue
+    await mkdir(dirname(dest), { recursive: true })
+    await copyFile(source, dest)
+  }
+  if (recipe.files.length) await prune(recipe, state, new Set(rels))
+}
 
-    await mkdir(target, { recursive: true })
-    for (const entry of await readdir(source, { withFileTypes: true })) {
-      if (entry.name === ".DS_Store") continue
-      await copy(join(source, entry.name), join(target, entry.name), options)
+// drop backup files that fell out of an explicit directory/glob include; literal files and hook artifacts are left alone
+async function prune(recipe, state, keep) {
+  const scopes = []
+  for (const pattern of recipe.files) {
+    if (GLOBBY.test(pattern)) { scopes.push(new Bun.Glob(pattern)); continue }
+    const stat = await lstat(state.repo(pattern)).catch(() => null)
+    if (stat?.isDirectory()) scopes.push(new Bun.Glob(`${pattern}/**`))
+  }
+  if (!scopes.length || !existsSync(state.repo())) return
+  for await (const rel of new Bun.Glob("**").scan({ cwd: state.repo(), dot: true, onlyFiles: true })) {
+    if (keep.has(rel) || !scopes.some(glob => glob.match(rel))) continue
+    state.changes.push(state.repo(rel))
+    if (!state.quiet) console.log(`${mark.drop} ${dim(relative(dot, state.repo(rel)))}`)
+    if (!state.dry) await rm(state.repo(rel), { force: true })
+  }
+}
+
+async function recover(recipe, state) {
+  const rels = await selection(recipe, state.repo())
+  const stamp = new Date().toISOString().replaceAll(/[-:T.Z]/g, "").slice(0, 14)
+  const saved = []
+  for (const rel of rels) {
+    const source = state.repo(rel)
+    const target = state.target(rel)
+    const present = existsSync(target)
+    if (present && (await same(source, target))) continue
+    state.changes.push(target)
+    if (!state.quiet) console.log(`${present ? mark.change : mark.add} ${dim(relative(home, target))}`)
+    if (state.dry) continue
+    if (present) {
+      const backup = `${target}.bak.${stamp}`
+      await rename(target, backup)
+      saved.push(relative(home, backup))
     }
-    return
+    await mkdir(dirname(target), { recursive: true })
+    await copyFile(source, target)
   }
 
-  if (targetStat) {
-    if (!options.overwrite) throw new Error(`target exists: ${target}`)
-    await rm(target, { recursive: true, force: true })
+  if (!state.changes.length) return console.log(`${mark.skip} ${dim(`nothing to restore for ${recipe.id}`)}`)
+  if (saved.length && !state.quiet) {
+    console.log(dim("moved aside before overwrite:"))
+    for (const path of saved) console.log(`  ${mark.drop} ${dim(path)}`)
   }
-
-  await mkdir(dirname(target), { recursive: true })
-  await copyFile(source, target)
 }

@@ -1,5 +1,7 @@
 export type Context = {
   dry: boolean
+  quiet: boolean
+  changes: string[]
   app(): boolean
   command(name: string): boolean
   exists(name: string): boolean
@@ -13,7 +15,9 @@ export type Context = {
 
 type Step = (context: Context) => void | Promise<void>
 
-type Hooks = {
+type Options = {
+  files?: string[]
+  ignore?: string[]
   available?(context: Context): boolean | Promise<boolean>
   save?: Step
   restore?: Step
@@ -21,8 +25,9 @@ type Hooks = {
   ["@restore"]?: Step
 }
 
-export type Recipe = { id: string; app: string; root: string[]; files: string[] } & Hooks
+export type Recipe = { id: string; app: string; root: string[]; files: string[]; ignore: string[] } & Options
 
-export function recipe(id: string, app: string, root: string, files: string[] = [], hooks: Hooks = {}): Recipe {
-  return { id, app, root: root.split("/"), files, ...hooks }
+// files defaults to everything under root; ignore prunes from it (exclude wins)
+export function recipe(id: string, app: string, root: string, options: Options = {}): Recipe {
+  return { id, app, root: root.split("/"), ...options, files: options.files ?? [], ignore: options.ignore ?? [] }
 }
