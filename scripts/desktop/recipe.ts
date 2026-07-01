@@ -1,6 +1,5 @@
 export type Context = {
-  force: boolean
-  dryRun: boolean
+  dry: boolean
   app(): boolean
   command(name: string): boolean
   exists(name: string): boolean

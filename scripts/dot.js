@@ -38,19 +38,30 @@ const commands = [
 ]
 
 function help() {
-  console.log(`usage: dot <command>
+  const groups = [
+    ["setup", [
+      ["install", "brew bundle install/Brewfile.core"],
+      ["link", "link home/* and config/*, copy bin/* into ~/bin"],
+      ["unlink", "remove links owned by this tree"],
+      ["macos", "apply low-side-effect macOS defaults"],
+      ["macos:opinionated", "apply personal macOS preferences"],
+    ]],
+    ["desktop", [
+      ["desktop", "list desktop app snapshots"],
+      ["save", "save one snapshot; pass --dry to preview"],
+      ["restore", "restore one snapshot; existing files move aside to .bak; --dry to preview"],
+    ]],
+    ["status", [
+      ["doctor", "core tool + link state, or doctor <app> to inspect one recipe"],
+    ]],
+  ]
 
-commands:
-	  desktop  list desktop app support snapshots
-	  doctor   show missing core tools and link state
-	  install  brew bundle install/Brewfile.core
-	  link     link home/* and config/*, copy bin/* into ~/bin
-	  macos    apply low-side-effect macOS defaults
-	  macos:opinionated
-	           apply personal macOS preferences
-	  restore  restore one desktop snapshot; pass --dry-run or --force
-	  save     save one desktop snapshot; pass --dry-run to preview
-	  unlink   remove links owned by this tree`)
+  const width = Math.max(...groups.flatMap(([, items]) => items.map(([name]) => name.length)))
+  const body = groups
+    .map(([title, items]) => `  ${title}\n` + items.map(([name, desc]) => `    ${name.padEnd(width)}  ${desc}`).join("\n"))
+    .join("\n\n")
+
+  console.log(`usage: dot <command>\n\n${body}`)
 }
 
 function command(name) {
