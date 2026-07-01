@@ -1,0 +1,11 @@
+akamud.vscode-theme-onedark
+dracula-theme.theme-dracula
+esbenp.prettier-vscode
+formulahendry.code-runner
+fwcd.kotlin
+lhacenmed.cursor-noir
+mateocerquetella.xcode-12-theme
+mathiasfrohlich.kotlin
+shd101wyy.markdown-preview-enhanced
+vadimcn.vscode-lldb
+vscodevim.vim
