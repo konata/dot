@@ -1,8 +1,8 @@
 # dot
 
-A bun & Homebrew based dotfile manager for macOS: shell modules, selected app
-configs, package lists, small wrappers, and macOS defaults. Mutable local state
-stays outside the repository.
+A macOS dotfile manager built on bun and Homebrew: shell modules, selected app
+configs, package lists, small wrappers, and macOS defaults. Local mutable state
+lives outside the repository.
 
 ## Bootstrap
 
