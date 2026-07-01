@@ -6,13 +6,20 @@ lives outside the repository.
 
 ## Bootstrap
 
-Core packages are in `install/Brewfile.core`; optional GUI apps and fonts are in
-`install/Brewfile.gui.optional`.
+On a fresh machine `bootstrap.zsh` is the cold start — it installs Homebrew and
+bun if missing, then execs `dot`, so it works before `dot` (or bun) exists. Run
+through it until `dot` is on your PATH:
 
 ```sh
-dot link
-dot install
+git clone git@github.com:konata/dot.git ~/dot
+~/dot/bootstrap.zsh link
+~/dot/bootstrap.zsh loader
+~/dot/bootstrap.zsh install
 ```
+
+After a new shell `dot` is on your PATH — see [Commands](#commands). Core packages
+are in `install/Brewfile.core`; optional GUI apps and fonts in
+`install/Brewfile.gui.optional`.
 
 ## Layout
 
