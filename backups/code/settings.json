@@ -1,0 +1,140 @@
+{
+  "workbench.colorCustomizations": {
+      "tab.activeBorder": "#ff0000",
+      "tab.unfocusedActiveBorder": "#000000"
+  },
+  "editor.minimap.enabled": false,
+  "macros": {
+      "commentLine": [
+          "editor.action.commentLine",
+          "cursorDown"
+      ]
+  },
+  "vim.easymotion": true,
+  "vim.incsearch": true,
+  "vim.useSystemClipboard": true,
+  "vim.useCtrlKeys": true,
+  "vim.hlsearch": true,
+  "vim.insertModeKeyBindings": [
+      {
+          "before": [
+              "j",
+              "j"
+          ],
+          "after": [
+              "<Esc>"
+          ]
+      }
+  ],
+  "vim.normalModeKeyBindingsNonRecursive": [
+      {
+          "before": [
+              "<leader>",
+              "d"
+          ],
+          "after": [
+              "d",
+              "d"
+          ]
+      },
+      {
+          "before": [
+              "<C-n>"
+          ],
+          "commands": [
+              ":nohl"
+          ]
+      }
+  ],
+  "vim.leader": "<space>",
+  "vim.handleKeys": {
+      "<C-a>": false,
+      "<C-f>": false
+  },
+  "terminal.integrated.sendKeybindingsToShell": true,
+  "terminal.integrated.profiles.osx": {
+      "zsh (login)": {
+          "path": "zsh",
+          "args": [
+              "-l"
+          ]
+      }
+  },
+  "editor.fontFamily": "\"Hack Nerd Font\"",
+  "editor.suggestSelection": "first",
+  "security.workspace.trust.untrustedFiles": "open",
+  "files.exclude": {
+      "**/.classpath": true,
+      "**/.project": true,
+      "**/.settings": true,
+      "**/.factorypath": true
+  },
+  "[javascript]": {
+      "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "codeQL.telemetry.enableTelemetry": true,
+  "[typescript]": {
+      "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[json]": {
+      "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "code-runner.clearPreviousOutput": true,
+  "[jsonc]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "cSpell.customDictionaries": {
+      "user": { "name": "user", "path": "~/.config/cspell/words.txt", "addWords": true, "scope": "user" }
+  },
+  "files.watcherExclude": {
+      "**/.bloop": true,
+      "**/.metals": true,
+      "**/.ammonite": true
+  },
+  "[typescriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "terminal.integrated.inheritEnv": false,
+  "diffEditor.ignoreTrimWhitespace": true,
+  "explorer.confirmDelete": false,
+  "security.workspace.trust.enabled": false,
+  "files.associations": {
+      "*.cjson": "jsonc",
+      "*.wxss": "css",
+      "*.wxs": "javascript"
+  },
+  "emmet.includeLanguages": {
+      "wxml": "html"
+  },
+  "[scss]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.tabSize": 2,
+  "[less]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+},
+  "kotlin.languageServer.enabled": false,
+  "kotlin.debugAdapter.enabled": false,
+  "[yaml]": {
+      "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[python]": {
+      "editor.formatOnType": true
+  },
+  "terminal.integrated.env.osx": {
+      "FIG_NEW_SESSION": "1"
+  },
+  "editor.fontSize": 14,
+  "explorer.confirmDragAndDrop": false,
+"editor.wordWrapColumn": 200,
+"window.newWindowProfile": "Default",
+"markdown-preview-enhanced.previewTheme": "github-dark.css",
+"security.promptForLocalFileProtocolHandling": false,
+"editor.accessibilitySupport": "off",
+}

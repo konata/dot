@@ -79,8 +79,30 @@ intentionally no `restore all`. Both commands support `--dry`.
 
 Each recipe declares `files` for normal file-based backup, plus optional
 `available`, `save`, and `restore` hooks; `@save` / `@restore` are dry-run-only
-previews. Cursor and Kiro use this to save extension IDs into `extensions.txt`
-and reinstall them on restore.
+previews. Cursor, Code, and Kiro use this to save extension IDs into
+`extensions.txt` and reinstall them on restore.
+
+```ts
+// desktop/code.ts
+import { recipe } from "../scripts/desktop/recipe"
+
+export default recipe("code", "Visual Studio Code.app", "Code/User",
+  ["settings.json"],
+  {
+    available: c => c.app() && c.command("code"),
+    async save(c) {
+      const ids = (await c.output("code", ["--list-extensions"])).trim()
+      await c.write("extensions.txt", `${ids}\n`)
+    },
+    async restore(c) {
+      for (const id of await c.lines("extensions.txt")) await c.run("code", ["--install-extension", id])
+    },
+    async ["@save"](c) { await c.write("extensions.txt") },
+  })
+```
+
+A file-only recipe needs just the first three arguments — `sublime.ts` passes a
+`files` list and no hooks.
 
 ## Private Layer
 
