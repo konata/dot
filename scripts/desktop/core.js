@@ -37,9 +37,11 @@ function known(recipes, id) {
 function context(recipe, options = {}) {
   const repo = (...parts) => join(dot, "backups", recipe.id, ...parts)
   const target = (...parts) => join(support, ...recipe.root, ...parts)
+  const changes = []
 
   return {
     dry: options.dry ?? false,
+    changes,
     app: () => Boolean(appPath(recipe)),
     command,
     exists: name => existsSync(repo(name)),
@@ -53,7 +55,9 @@ function context(recipe, options = {}) {
       if (result.status !== 0) throw new CliError(`${tool} ${args.join(" ")} failed`)
     },
     async write(name, text) {
-      if (options.dry) return console.log(`save generated ${relative(dot, repo(name))}`)
+      if (options.dry) { changes.push(name); return console.log(`save generated ${relative(dot, repo(name))}`) }
+      if (existsSync(repo(name)) && (await Bun.file(repo(name)).text()) === text) return
+      changes.push(name)
       await mkdir(dirname(repo(name)), { recursive: true })
       await Bun.write(repo(name), text)
       console.log(`write ${relative(dot, repo(name))}`)
@@ -105,13 +109,9 @@ export async function save(recipes, id, ...args) {
   const state = context(recipe, options)
   if (!(await available(recipe, state))) throw new CliError(`${recipe.id} is not available`)
 
-  if (!options.dry) {
-    await rm(state.repo(), { recursive: true, force: true })
-    await mkdir(state.repo(), { recursive: true })
-  }
-
   await snapshot(recipe, state)
   await (options.dry ? recipe["@save"]?.(state) : recipe.save?.(state))
+  if (!state.changes.length) console.log(`nothing to save for ${recipe.id}`)
 }
 
 export async function restore(recipes, id, ...args) {
@@ -132,19 +132,50 @@ async function snapshot(recipe, state) {
   for (const name of recipe.files ?? []) {
     const source = state.target(name)
     const stat = await lstat(source).catch(() => null)
-    if (!stat) {
-      console.log(`skip missing ${source}`)
-      continue
-    }
-
-    if (state.dry) {
-      await preview(source, state.repo(name))
-      continue
-    }
-
-    await copy(source, state.repo(name), { overwrite: true })
-    console.log(`save ${relative(home, source)} -> ${relative(dot, state.repo(name))}`)
+    // a declared file absent locally may just be uncreated on this machine — keep any existing backup
+    if (!stat) { console.log(`skip missing ${source}`); continue }
+    await mirror(source, state.repo(name), state)
   }
+}
+
+// sync dest to match source, content-aware: copy only what differs, drop what source no longer has
+async function mirror(source, dest, state) {
+  const sourceStat = await lstat(source)
+  let destStat = await lstat(dest).catch(() => null)
+
+  if (sourceStat.isDirectory()) {
+    if (destStat && !destStat.isDirectory()) {
+      if (!state.dry) await rm(dest, { recursive: true, force: true })
+      destStat = null
+    }
+    if (!destStat && !state.dry) await mkdir(dest, { recursive: true })
+
+    const names = new Set()
+    for (const entry of await readdir(source, { withFileTypes: true })) {
+      if (entry.name === ".DS_Store") continue
+      names.add(entry.name)
+      await mirror(join(source, entry.name), join(dest, entry.name), state)
+    }
+    for (const entry of destStat ? await readdir(dest, { withFileTypes: true }) : []) {
+      if (entry.name === ".DS_Store" || names.has(entry.name)) continue
+      state.changes.push(join(dest, entry.name))
+      console.log(`remove ${relative(dot, join(dest, entry.name))}`)
+      if (!state.dry) await rm(join(dest, entry.name), { recursive: true, force: true })
+    }
+    return
+  }
+
+  if (destStat?.isDirectory()) {
+    if (!state.dry) await rm(dest, { recursive: true, force: true })
+    destStat = null
+  }
+  if (destStat && (await same(source, dest))) return
+
+  state.changes.push(dest)
+  console.log(`${destStat ? "update" : "write"} ${relative(dot, dest)}`)
+  if (state.dry) return
+  await mkdir(dirname(dest), { recursive: true })
+  await copyFile(source, dest)
 }
 
 async function recover(recipe, state) {
@@ -188,16 +219,6 @@ async function plan(recipe, repo, target) {
   }
 
   return entries
-}
-
-async function preview(source, target) {
-  const stat = await lstat(source)
-  if (!stat.isDirectory()) return console.log(`save ${relative(home, source)} -> ${relative(dot, target)}`)
-
-  for (const entry of await readdir(source, { withFileTypes: true })) {
-    if (entry.name === ".DS_Store") continue
-    await preview(join(source, entry.name), join(target, entry.name))
-  }
 }
 
 function report(entries) {
