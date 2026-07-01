@@ -24,9 +24,9 @@ backups/    saved desktop app snapshots
 shell/      zsh modules loaded by shell/init.zsh
 install/    Brewfiles
 macos/      explicit macOS defaults scripts
-scripts/    Bun management commands
+kernel/     dot CLI + recipe engine
 bin/        command wrappers copied into ~/bin
-examples/   starter files laid out like their target roots
+loader/     ~ loaders, copied manually
 ```
 
 Each `~` config file is a thin **loader**: it pulls in the tracked source — shell
@@ -45,10 +45,10 @@ export DOT_HOME="${DOT_HOME:-$HOME/dot}"
 Loaders are copied manually (they are starters, not linked):
 
 ```sh
-cp ~/dot/examples/home/.zshrc     ~/.zshrc
-cp ~/dot/examples/home/.gitconfig ~/.gitconfig
-cp ~/dot/examples/home/.vimrc     ~/.vimrc
-cp ~/dot/examples/home/.ideavimrc ~/.ideavimrc
+cp ~/dot/loader/home/.zshrc     ~/.zshrc
+cp ~/dot/loader/home/.gitconfig ~/.gitconfig
+cp ~/dot/loader/home/.vimrc     ~/.vimrc
+cp ~/dot/loader/home/.ideavimrc ~/.ideavimrc
 ```
 
 ## Commands
@@ -76,7 +76,7 @@ dot unlink                # remove every symlink this repo owns
 ## Desktop Backups
 
 Desktop app recipes live in `desktop/*.ts` and are discovered automatically; each
-calls the typed `recipe()` factory (`scripts/desktop/recipe.ts`). Snapshots are
+calls the typed `recipe()` factory (`kernel/desktop/recipe.ts`). Snapshots are
 stored in `backups/<app>`. Supported apps are currently `code`, `cursor`, `kiro`,
 and `sublime`.
 

@@ -117,7 +117,7 @@ async function connect(source, target) {
 async function link() {
   for (const pair of await links()) await connect(...pair)
   await copyBins()
-  console.log(dim("examples/ contains starter files; copy them manually when needed"))
+  console.log(dim("loader/ holds the ~ loaders; copy them into place manually"))
 }
 
 async function unlink() {

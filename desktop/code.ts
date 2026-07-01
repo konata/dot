@@ -1,4 +1,4 @@
-import { recipe } from "../scripts/desktop/recipe"
+import { recipe } from "../kernel/desktop/recipe"
 
 export default recipe("code", "Visual Studio Code.app", "Code/User", {
   files: ["settings.json"],

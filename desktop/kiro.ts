@@ -1,4 +1,4 @@
-import { recipe } from "../scripts/desktop/recipe"
+import { recipe } from "../kernel/desktop/recipe"
 
 export default recipe("kiro", "Kiro.app", "Kiro/User", {
   files: ["settings.json"],

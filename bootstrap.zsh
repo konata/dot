@@ -11,5 +11,5 @@ if ! command -v bun >/dev/null 2>&1; then
   brew install bun
 fi
 
-exec bun "$DOT_HOME/scripts/dot.js" "$@"
+exec bun "$DOT_HOME/kernel/dot.js" "$@"
 

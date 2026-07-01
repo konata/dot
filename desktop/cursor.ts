@@ -1,4 +1,4 @@
-import { recipe } from "../scripts/desktop/recipe"
+import { recipe } from "../kernel/desktop/recipe"
 
 export default recipe("cursor", "Cursor.app", "Cursor/User", {
   files: ["settings.json", "keybindings.json", "snippets"],

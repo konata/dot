@@ -3,14 +3,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "desktop": "bun scripts/dot.js desktop",
-    "doctor": "bun scripts/dot.js doctor",
-    "install": "bun scripts/dot.js install",
-    "link": "bun scripts/dot.js link",
-    "macos": "bun scripts/dot.js macos",
-    "macos:opinionated": "bun scripts/dot.js macos:opinionated",
-    "restore": "bun scripts/dot.js restore",
-    "save": "bun scripts/dot.js save",
-    "unlink": "bun scripts/dot.js unlink"
+    "desktop": "bun kernel/dot.js desktop",
+    "doctor": "bun kernel/dot.js doctor",
+    "install": "bun kernel/dot.js install",
+    "link": "bun kernel/dot.js link",
+    "macos": "bun kernel/dot.js macos",
+    "macos:opinionated": "bun kernel/dot.js macos:opinionated",
+    "restore": "bun kernel/dot.js restore",
+    "save": "bun kernel/dot.js save",
+    "unlink": "bun kernel/dot.js unlink"
   }
 }
