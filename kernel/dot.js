@@ -43,6 +43,7 @@ function help() {
     ["setup", [
       ["install", "brew bundle install/Brewfile.core"],
       ["link", "link home/* and config/*, copy bin/* into ~/bin"],
+      ["loader", "copy loader/home/* into ~ (backs up anything it overwrites)"],
       ["unlink", "remove links owned by this tree"],
       ["macos", "apply low-side-effect macOS defaults"],
       ["macos:opinionated", "apply personal macOS preferences"],
@@ -117,7 +118,24 @@ async function connect(source, target) {
 async function link() {
   for (const pair of await links()) await connect(...pair)
   await copyBins()
-  console.log(dim("loader/ holds the ~ loaders; copy them into place manually"))
+  console.log(dim("run `dot loader` to place the ~ loaders"))
+}
+
+async function loaders() {
+  return (await files(join(dot, "loader", "home")))
+    .map(name => [join(dot, "loader", "home", name), join(home, name)])
+}
+
+// one-time init: place the loaders, backing up anything already there (identical → skip)
+async function loader() {
+  for (const [source, target] of await loaders()) {
+    const stat = await lstat(target).catch(() => null)
+    if (stat && (await same(source, target))) { console.log(`${mark.ok} ${dim(relative(home, target))}`); continue }
+    if (stat) await rename(target, `${target}.bak.${stamp}`)
+    await mkdir(dirname(target), { recursive: true })
+    await copyFile(source, target)
+    console.log(stat ? `${mark.change} ${dim(relative(home, target))} ${dim("(backed up)")}` : `${mark.add} ${dim(relative(home, target))}`)
+  }
 }
 
 async function unlink() {
@@ -209,6 +227,7 @@ const tasks = {
   doctor,
   install,
   link,
+  loader,
   unlink,
   macos,
   "macos:opinionated": () => macos("opinionated.zsh"),

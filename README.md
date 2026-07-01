@@ -42,13 +42,12 @@ export DOT_HOME="${DOT_HOME:-$HOME/dot}"
 [[ -r "$DOT_HOME/shell/init.zsh" ]] && source "$DOT_HOME/shell/init.zsh"
 ```
 
-Loaders are copied manually (they are starters, not linked):
+`dot loader` places them into `~` (they are copied, not linked, so your local
+edits and tool writes stay out of the repo). It is a one-time init step; anything
+already there is backed up to `<name>.bak.<stamp>` before being overwritten.
 
 ```sh
-cp ~/dot/loader/home/.zshrc     ~/.zshrc
-cp ~/dot/loader/home/.gitconfig ~/.gitconfig
-cp ~/dot/loader/home/.vimrc     ~/.vimrc
-cp ~/dot/loader/home/.ideavimrc ~/.ideavimrc
+dot loader
 ```
 
 ## Commands
@@ -57,6 +56,7 @@ Roughly the order you'd run on a new machine:
 
 ```sh
 dot link                  # symlink home/ + config/, copy bin/ into ~/bin
+dot loader                # place ~ loaders (backs up anything it overwrites)
 dot install               # brew bundle from install/Brewfile.core
 dot macos                 # macOS defaults; macos:opinionated adds personal prefs
 dot macos:opinionated
