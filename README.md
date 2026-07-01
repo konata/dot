@@ -18,8 +18,8 @@ bun run link
 ```text
 home/       files linked into $HOME
 config/     selected files linked into $HOME/.config
-desktop/    desktop app support definitions
-backups/    saved desktop app support snapshots
+desktop/    desktop app recipes (*.ts)
+backups/    saved desktop app snapshots
 shell/      zsh modules loaded by shell/init.zsh
 install/    Brewfiles
 macos/      explicit macOS defaults scripts
@@ -52,10 +52,10 @@ bun run desktop
 bun run doctor
 bun run install
 bun run link
-bun run save -- cursor --dry-run
+bun run save -- cursor --dry
 bun run save -- cursor
-bun run restore -- cursor --dry-run
-bun run restore -- cursor --force
+bun run restore -- cursor --dry
+bun run restore -- cursor
 bun run unlink
 bun run macos
 bun run macos:opinionated
@@ -66,18 +66,21 @@ bun run macos:opinionated
 
 ## Desktop Backups
 
-Desktop app definitions live in `desktop/*.js` and are discovered automatically.
-Snapshots are stored in `backups/<app>`. Supported apps are currently `cursor`
-and `sublime`.
+Desktop app recipes live in `desktop/*.ts` and are discovered automatically; each
+calls the typed `recipe()` factory (`scripts/desktop/recipe.ts`). Snapshots are
+stored in `backups/<app>`. Supported apps are currently `cursor`, `kiro`, and
+`sublime`.
 
-`save <app>` replaces the previous snapshot for that app. `restore <app>` merges
-directories, requires `--force` before overwriting files, and intentionally has
-no `restore all`. Both commands support `--dry-run`.
+`save <app>` diffs each file against its backup and copies only what changed,
+pruning stale entries and reporting `nothing to save` when in sync. `restore
+<app>` skips files already matching, and for the rest moves the existing file
+aside to `<name>.bak.<stamp>` before writing, then reports what moved. There is
+intentionally no `restore all`. Both commands support `--dry`.
 
-Each definition can declare `files` for normal file-based backup. App-specific
-work uses `save` / `restore`; dry-run-only previews use `_save` / `_restore`.
-Cursor uses this to save extension IDs into `extensions.txt` and reinstall them
-on restore.
+Each recipe declares `files` for normal file-based backup, plus optional
+`available`, `save`, and `restore` hooks; `@save` / `@restore` are dry-run-only
+previews. Cursor and Kiro use this to save extension IDs into `extensions.txt`
+and reinstall them on restore.
 
 ## Private Layer
 
