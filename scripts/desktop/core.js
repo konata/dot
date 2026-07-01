@@ -112,7 +112,7 @@ export async function save(recipes, id, ...args) {
   }
 
   await snapshot(recipe, state)
-  await (options.dryRun ? recipe._save?.(state) : recipe.save?.(state))
+  await (options.dryRun ? recipe["@save"]?.(state) : recipe.save?.(state))
 }
 
 export async function restore(recipes, id, ...args) {
@@ -127,7 +127,7 @@ export async function restore(recipes, id, ...args) {
   const state = context(recipe, options)
   if (!(await available(recipe, state))) throw new CliError(`${recipe.id} is not available`)
   await recover(recipe, state)
-  await (options.dryRun ? recipe._restore?.(state) : recipe.restore?.(state))
+  await (options.dryRun ? recipe["@restore"]?.(state) : recipe.restore?.(state))
 }
 
 async function snapshot(recipe, state) {

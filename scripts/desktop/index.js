@@ -3,7 +3,7 @@ import { pathToFileURL } from "node:url"
 import { doctor as inspect, list, restore as restoreRecipe, save as saveRecipe } from "./core.js"
 
 const definitions = resolve(import.meta.dir, "../../desktop")
-const recipes = await Array.fromAsync(new Bun.Glob("*.js").scan({ cwd: definitions }))
+const recipes = await Array.fromAsync(new Bun.Glob("*.ts").scan({ cwd: definitions }))
   .then(files => Promise.all(files.sort().map(file => import(pathToFileURL(join(definitions, file)).href))))
   .then(modules => modules.map(module => module.default).sort((left, right) => left.id.localeCompare(right.id)))
 
