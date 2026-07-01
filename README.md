@@ -1,7 +1,8 @@
 # dot
 
-Personal macOS setup: shell modules, selected app configs, package lists, small
-wrappers, and macOS defaults. Mutable local state stays outside the repository.
+A bun & Homebrew based dotfile manager for macOS: shell modules, selected app
+configs, package lists, small wrappers, and macOS defaults. Mutable local state
+stays outside the repository.
 
 ## Bootstrap
 
@@ -9,8 +10,8 @@ Core packages are in `install/Brewfile.core`; optional GUI apps and fonts are in
 `install/Brewfile.gui.optional`.
 
 ```sh
-bun run link
-bun run install
+dot link
+dot install
 ```
 
 ## Layout
@@ -47,29 +48,20 @@ cp ~/dot/examples/home/.gitconfig.local ~/.gitconfig.local
 
 ## Commands
 
-Roughly the order you'd run on a fresh machine:
+Roughly in setup order:
 
 ```sh
-# 0. prerequisite — dot is a bun script, so bun must exist first.
-#    install Homebrew, then:
-brew install bun
-
-# bootstrap runs via `bun run` from the repo; dot isn't on PATH yet
-bun run link              # symlink home/ + config/, copy bin/ into ~/bin
-bun run install           # brew bundle install/Brewfile.core
-bun run macos             # macOS defaults (opinionated layers personal prefs)
-bun run macos:opinionated
-
-# set up the ~/.zshrc shim (below) and open a new shell so ~/bin/dot is on PATH.
-# from here, day to day, `dot <command>` works from anywhere:
-
+dot link                  # symlink home/ + config/, copy bin/ into ~/bin
+dot install               # brew bundle from install/Brewfile.core
+dot macos                 # macOS defaults; macos:opinionated adds personal prefs
+dot macos:opinionated
 dot doctor                # core tools + link state; `dot doctor cursor` for one recipe
 dot desktop               # list app recipes with snapshot state
 
 dot restore cursor --dry  # preview; without --dry, changed files move to <name>.bak.<stamp>
 dot restore cursor
 
-dot save cursor --dry     # preview; a repeat save with no changes prints "nothing to save"
+dot save cursor --dry     # preview; a repeat save with no change prints "nothing to save"
 dot save cursor
 
 dot unlink                # remove every symlink this repo owns
