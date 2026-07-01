@@ -21,7 +21,10 @@ _jeb() {
 }
 
 jeb() {
-  _jeb "$JEB_HOME/jeb_macos.sh" "$@" </dev/null >/dev/null 2>&1 &!
+  {
+    trap '' TTIN TTOU TSTP
+    _jeb "$JEB_HOME/jeb_macos.sh" "$@"
+  } </dev/null >/dev/null 2>&1 &!
 }
 
 kfc() {
