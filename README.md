@@ -24,7 +24,7 @@ shell/      zsh modules loaded by shell/init.zsh
 install/    Brewfiles
 macos/      explicit macOS defaults scripts
 kernel/     dot CLI + recipe engine
-bin/        command wrappers copied into ~/bin
+bin/        command wrappers symlinked into ~/bin
 loader/     ~ loaders, copied manually
 ```
 
@@ -54,7 +54,7 @@ dot loader
 Roughly the order you'd run on a new machine:
 
 ```sh
-dot link                  # symlink home/ (incl. .config/), copy bin/ into ~/bin
+dot link                  # symlink home/ (incl. .config/) and bin/ into ~/bin
 dot loader                # place ~ loaders (backs up anything it overwrites)
 dot install               # brew bundle from install/Brewfile.core
 dot macos                 # macOS defaults; macos:opinionated adds personal prefs

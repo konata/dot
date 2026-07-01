@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import { spawnSync } from "node:child_process"
 import { existsSync } from "node:fs"
-import { chmod, copyFile, lstat, mkdir, readlink, rename, rm, symlink } from "node:fs/promises"
+import { copyFile, lstat, mkdir, readlink, rename, rm, symlink } from "node:fs/promises"
 import { homedir } from "node:os"
 import { dirname, join, relative, resolve } from "node:path"
 import { $ } from "bun"
@@ -89,10 +89,11 @@ async function files(root) {
     .then(names => names.filter(name => !name.includes(".DS_Store")))
 }
 
-// home/ mirrors $HOME verbatim (home/.config/... → ~/.config/...)
+// home/ mirrors $HOME verbatim (home/.config/... → ~/.config/...); bin/ symlinks into ~/bin
 async function links() {
-  return (await files(join(dot, "home")))
-    .map(name => [join(dot, "home", name), join(home, name)])
+  const homes = (await files(join(dot, "home"))).map(name => [join(dot, "home", name), join(home, name)])
+  const binaries = (await files(join(dot, "bin"))).map(name => [join(dot, "bin", name), join(home, "bin", name)])
+  return [...homes, ...binaries]
 }
 
 async function connect(source, target) {
@@ -113,7 +114,6 @@ async function connect(source, target) {
 
 async function link() {
   for (const pair of await links()) await connect(...pair)
-  await copyBins()
   console.log(dim("run `dot loader` to place the ~ loaders"))
 }
 
@@ -147,7 +147,6 @@ async function doctor(id) {
 
   console.log(bold("dot") + " " + dim(dot))
   console.log(`${dim("shim")} ${existsSync(join(home, ".zshrc")) ? green("~/.zshrc") : red("~/.zshrc missing")}`)
-  console.log(`${dim("bin ")} ${dim(await binState())}`)
 
   for (const name of commands) {
     console.log(`${command(name) ? mark.ok : mark.bad} ${name}`)
@@ -156,11 +155,6 @@ async function doctor(id) {
   for (const [source, target] of await links()) {
     const linked = await owned(target)
     console.log(`${linked ? mark.ok : mark.change} ${relative(dot, source)} ${dim(`→ ${relative(home, target)}`)}${linked ? "" : yellow(" external")}`)
-  }
-
-  for (const [source, target] of await bins()) {
-    const copied = await same(source, target)
-    console.log(`${copied ? mark.ok : mark.change} ${relative(dot, source)} ${dim(`→ ${relative(home, target)}`)}${copied ? "" : yellow(" external")}`)
   }
 }
 
@@ -182,35 +176,6 @@ async function macos(file = "defaults.zsh") {
   await $`zsh ${join(dot, "macos", file)}`
 }
 
-async function bins() {
-  return (await files(join(dot, "bin")))
-    .map(name => [join(dot, "bin", name), join(home, "bin", name)])
-}
-
-async function copyBins() {
-  await prepareBin()
-  for (const [source, target] of await bins()) {
-    await copyFile(source, target)
-    await chmod(target, 0o755)
-    console.log(`${mark.add} ${dim(relative(home, target))}`)
-  }
-}
-
-async function binState() {
-  const target = join(home, "bin")
-  const stat = await lstat(target).catch(() => null)
-  if (!stat) return "~/bin missing"
-  if (stat.isSymbolicLink()) return `~/bin symlink -> ${await readlink(target)}`
-  if (stat.isDirectory()) return "~/bin directory"
-  return "~/bin exists but is not a directory"
-}
-
-async function prepareBin() {
-  const target = join(home, "bin")
-  const stat = await lstat(target).catch(() => null)
-  if (stat && !stat.isDirectory()) await rename(target, `${target}.bak.${stamp}`)
-  await mkdir(target, { recursive: true })
-}
 
 const tasks = {
   desktop,
