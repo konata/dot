@@ -101,35 +101,27 @@ copied, not symlinked. Extension lists aren't diffed; run `save` to refresh them
 - `options.available` / `save` / `restore` — optional hooks; `@save` / `@restore`
   are dry-run-only previews
 
-Only `files`, no `ignore` — list exactly what to back up:
+Examples (each is the `export default` of its own `desktop/<id>.ts`):
 
 ```ts
-export default recipe("sublime", "Sublime Text.app", "Sublime Text/Packages/User", {
+// only files — list exactly what to back up
+recipe("sublime", "Sublime Text.app", "Sublime Text/Packages/User", {
   files: ["Preferences.sublime-settings", "Default (OSX).sublime-keymap"],
 })
-```
 
-Only `ignore`, no `files` — take everything under `root` minus the noise:
-
-```ts
-export default recipe("clash", "Clash Verge.app", "io.github.clash-verge-rev.clash-verge", {
+// only ignore — everything under root minus the noise
+recipe("clash", "Clash Verge.app", "io.github.clash-verge-rev.clash-verge", {
   ignore: ["*.log", "cache/**"],
 })
-```
 
-Both — a folder of proxy configs, minus its logs:
-
-```ts
-export default recipe("clash", "Clash Verge.app", "io.github.clash-verge-rev.clash-verge", {
+// both — a folder of proxy configs, minus its logs
+recipe("clash", "Clash Verge.app", "io.github.clash-verge-rev.clash-verge", {
   files: ["profiles"],
   ignore: ["profiles/*.log"],
 })
-```
 
-With hooks — Code also saves its extension IDs and reinstalls them on restore:
-
-```ts
-export default recipe("code", "Visual Studio Code.app", "Code/User", {
+// with hooks — save extension IDs and reinstall them on restore
+recipe("code", "Visual Studio Code.app", "Code/User", {
   files: ["settings.json"],
   available: c => c.app() && c.command("code"),
   async save(c) {
