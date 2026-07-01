@@ -48,7 +48,7 @@ cp ~/dot/examples/home/.gitconfig.local ~/.gitconfig.local
 
 ## Commands
 
-Roughly in setup order:
+Roughly the order you'd run on a new machine:
 
 ```sh
 dot link                  # symlink home/ + config/, copy bin/ into ~/bin
