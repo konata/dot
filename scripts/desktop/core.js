@@ -19,29 +19,29 @@ function command(name) {
   return spawnSync("zsh", ["-lc", `command -v ${name}`], { stdio: "ignore" }).status === 0
 }
 
-function appPath(adapter) {
-  return [join("/Applications", adapter.app), join(home, "Applications", adapter.app)]
+function appPath(recipe) {
+  return [join("/Applications", recipe.app), join(home, "Applications", recipe.app)]
     .find(path => existsSync(path))
 }
 
-function label(adapter) {
-  return adapter.app.replace(/\.app$/, "")
+function label(recipe) {
+  return recipe.app.replace(/\.app$/, "")
 }
 
-function known(adapters, id) {
-  const adapter = new Map(adapters.map(adapter => [adapter.id, adapter])).get(String(id ?? "").toLowerCase())
-  if (adapter) return adapter
-  throw new CliError(`unknown desktop app: ${id ?? ""}\nsupported desktop apps: ${adapters.map(adapter => adapter.id).join(", ")}`, 2)
+function known(recipes, id) {
+  const recipe = new Map(recipes.map(recipe => [recipe.id, recipe])).get(String(id ?? "").toLowerCase())
+  if (recipe) return recipe
+  throw new CliError(`unknown desktop app: ${id ?? ""}\nsupported desktop apps: ${recipes.map(recipe => recipe.id).join(", ")}`, 2)
 }
 
-function context(adapter, options = {}) {
-  const repo = (...parts) => join(dot, "backups", adapter.id, ...parts)
-  const target = (...parts) => join(support, ...adapter.root, ...parts)
+function context(recipe, options = {}) {
+  const repo = (...parts) => join(dot, "backups", recipe.id, ...parts)
+  const target = (...parts) => join(support, ...recipe.root, ...parts)
 
   return {
     force: options.force ?? false,
     dryRun: options.dryRun ?? false,
-    app: () => Boolean(appPath(adapter)),
+    app: () => Boolean(appPath(recipe)),
     command,
     exists: name => existsSync(repo(name)),
     async output(tool, args) {
@@ -69,54 +69,54 @@ function context(adapter, options = {}) {
   }
 }
 
-async function available(adapter, state = context(adapter)) {
-  return adapter.available ? await adapter.available(state) : state.app()
+async function available(recipe, state = context(recipe)) {
+  return recipe.available ? await recipe.available(state) : state.app()
 }
 
-export async function list(adapters) {
-  for (const adapter of adapters) {
-    const state = context(adapter)
-    console.log(`${await available(adapter, state) ? "ok" : "missing"} ${adapter.id} (${label(adapter)})`)
+export async function list(recipes) {
+  for (const recipe of recipes) {
+    const state = context(recipe)
+    console.log(`${await available(recipe, state) ? "ok" : "missing"} ${recipe.id} (${label(recipe)})`)
   }
 }
 
-export async function doctor(adapters, id) {
-  const adapter = known(adapters, id)
-  const state = context(adapter)
+export async function doctor(recipes, id) {
+  const recipe = known(recipes, id)
+  const state = context(recipe)
 
-  console.log(`${adapter.id}: ${label(adapter)}`)
-  console.log(`app: ${appPath(adapter) ?? "missing"}`)
+  console.log(`${recipe.id}: ${label(recipe)}`)
+  console.log(`app: ${appPath(recipe) ?? "missing"}`)
   console.log(`root: ${state.target()}`)
   console.log(`repo: ${state.repo()}`)
-  console.log(`available: ${await available(adapter, state) ? "yes" : "no"}`)
+  console.log(`available: ${await available(recipe, state) ? "yes" : "no"}`)
 
-  for (const name of adapter.files ?? []) {
+  for (const name of recipe.files ?? []) {
     console.log(`${existsSync(state.target(name)) ? "source" : "missing"} ${name}`)
   }
 }
 
-export async function save(adapters, id, ...args) {
-  const adapter = known(adapters, id)
+export async function save(recipes, id, ...args) {
+  const recipe = known(recipes, id)
   const options = {
     dryRun: args.includes("--dry-run"),
   }
   const unknown = args.filter(arg => arg !== "--dry-run")
   if (unknown.length) throw new CliError(`unknown save option: ${unknown.join(" ")}`)
 
-  const state = context(adapter, options)
-  if (!(await available(adapter, state))) throw new CliError(`${adapter.id} is not available`)
+  const state = context(recipe, options)
+  if (!(await available(recipe, state))) throw new CliError(`${recipe.id} is not available`)
 
   if (!options.dryRun) {
     await rm(state.repo(), { recursive: true, force: true })
     await mkdir(state.repo(), { recursive: true })
   }
 
-  await snapshot(adapter, state)
-  await (options.dryRun ? adapter._save?.(state) : adapter.save?.(state))
+  await snapshot(recipe, state)
+  await (options.dryRun ? recipe._save?.(state) : recipe.save?.(state))
 }
 
-export async function restore(adapters, id, ...args) {
-  const adapter = known(adapters, id)
+export async function restore(recipes, id, ...args) {
+  const recipe = known(recipes, id)
   const options = {
     force: args.includes("--force"),
     dryRun: args.includes("--dry-run"),
@@ -124,14 +124,14 @@ export async function restore(adapters, id, ...args) {
   const unknown = args.filter(arg => !["--force", "--dry-run"].includes(arg))
   if (unknown.length) throw new CliError(`unknown restore option: ${unknown.join(" ")}`)
 
-  const state = context(adapter, options)
-  if (!(await available(adapter, state))) throw new CliError(`${adapter.id} is not available`)
-  await recover(adapter, state)
-  await (options.dryRun ? adapter._restore?.(state) : adapter.restore?.(state))
+  const state = context(recipe, options)
+  if (!(await available(recipe, state))) throw new CliError(`${recipe.id} is not available`)
+  await recover(recipe, state)
+  await (options.dryRun ? recipe._restore?.(state) : recipe.restore?.(state))
 }
 
-async function snapshot(adapter, state) {
-  for (const name of adapter.files ?? []) {
+async function snapshot(recipe, state) {
+  for (const name of recipe.files ?? []) {
     const source = state.target(name)
     const stat = await lstat(source).catch(() => null)
     if (!stat) {
@@ -149,10 +149,10 @@ async function snapshot(adapter, state) {
   }
 }
 
-async function recover(adapter, state) {
-  if (!adapter.files?.length) return
+async function recover(recipe, state) {
+  if (!recipe.files?.length) return
 
-  const entries = await plan(adapter, state.repo, state.target)
+  const entries = await plan(recipe, state.repo, state.target)
   const conflicts = entries.filter(entry => entry.action === "conflict")
 
   if (conflicts.length && !state.force && !state.dryRun) {
@@ -162,22 +162,22 @@ async function recover(adapter, state) {
     throw new CliError("")
   }
 
-  if (!entries.length) return console.log(`nothing to restore for ${adapter.id}`)
+  if (!entries.length) return console.log(`nothing to restore for ${recipe.id}`)
 
   report(entries)
   if (state.dryRun) return
 
-  for (const name of adapter.files ?? []) {
+  for (const name of recipe.files ?? []) {
     const source = state.repo(name)
     if (!existsSync(source)) continue
     await copy(source, state.target(name), { overwrite: state.force })
   }
 }
 
-async function plan(adapter, repo, target) {
+async function plan(recipe, repo, target) {
   const entries = []
 
-  for (const name of adapter.files ?? []) {
+  for (const name of recipe.files ?? []) {
     const source = repo(name)
     const stat = await lstat(source).catch(() => null)
     if (!stat) continue
