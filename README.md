@@ -121,6 +121,17 @@ export default recipe("code", "Visual Studio Code.app", "Code/User",
   })
 ```
 
+`recipe(id, app, root, files, hooks)`:
+
+- `id` — the command name and the `backups/<id>` snapshot folder
+- `app` — the `.app` bundle name, looked up under `/Applications` and
+  `~/Applications` to decide availability
+- `root` — path **under `~/Library/Application Support`** holding the app's
+  config (`"Code/User"` → `~/Library/Application Support/Code/User`)
+- `files` — names (files or directories) under `root` to back up
+- `hooks` — optional `available` / `save` / `restore`, plus dry-only
+  `@save` / `@restore`
+
 A file-only recipe needs just the first three arguments — `sublime.ts` passes a
 `files` list and no hooks.
 
