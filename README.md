@@ -7,19 +7,21 @@ lives outside the repository.
 ## Bootstrap
 
 On a fresh machine `bootstrap.zsh` is the cold start — it installs Homebrew and
-bun if missing, then execs `dot`, so it works before `dot` (or bun) exists. Run
-through it until `dot` is on your PATH:
+bun if missing, points `DOT_HOME` at this checkout, and defines a temporary
+`dot()` function in the current shell before `~/bin/dot` exists:
 
 ```sh
 git clone git@github.com:konata/dot.git ~/dot
-~/dot/bootstrap.zsh link
-~/dot/bootstrap.zsh loader
-~/dot/bootstrap.zsh install
+source ~/dot/bootstrap.zsh
+dot link
+dot loader
+dot install
 ```
 
-After a new shell `dot` is on your PATH — see [Commands](#commands). Core packages
-are in `install/Brewfile.core`; optional GUI apps and fonts in
-`install/Brewfile.gui.optional`.
+Source it; direct execution cannot update your shell, and re-sourcing is safe.
+After `dot link` and a new shell, the normal `~/bin/dot` wrapper is on your PATH
+— see [Commands](#commands). Core packages are in `install/Brewfile.core`;
+optional GUI apps and fonts in `install/Brewfile.gui.optional`.
 
 ## Layout
 
