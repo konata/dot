@@ -164,7 +164,8 @@ async function expand(patterns, base) {
 }
 
 function excluder(recipe) {
-  const globs = ["**/.DS_Store", ...recipe.ignore].map(pattern => new Bun.Glob(pattern))
+  // never capture our own artifacts: .DS_Store and restore's <name>.bak.<stamp>
+  const globs = ["**/.DS_Store", "**/*.bak.[0-9]*", ...recipe.ignore].map(pattern => new Bun.Glob(pattern))
   return rel => globs.some(glob => glob.match(rel))
 }
 
