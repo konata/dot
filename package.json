@@ -6,6 +6,7 @@
     "desktop": "bun kernel/dot.js desktop",
     "doctor": "bun kernel/dot.js doctor",
     "install": "bun kernel/dot.js install",
+    "install:cask": "bun kernel/dot.js install cask",
     "link": "bun kernel/dot.js link",
     "macos": "bun kernel/dot.js macos",
     "macos:opinionated": "bun kernel/dot.js macos:opinionated",

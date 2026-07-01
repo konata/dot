@@ -20,8 +20,9 @@ dot install
 
 Source it; direct execution cannot update your shell, and re-sourcing is safe.
 After `dot link` and a new shell, the normal `~/bin/dot` wrapper is on your PATH
-— see [Commands](#commands). Core packages are in `install/Brewfile.core`;
-optional GUI apps and fonts in `install/Brewfile.gui.optional`.
+— see [Commands](#commands). Homebrew packages live in `install/brew.json`;
+`dot install` installs formulae, and `dot install cask` installs optional GUI
+apps and fonts.
 
 ## Layout
 
@@ -30,7 +31,7 @@ home/       mirror of $HOME, linked in (incl. home/.config/ → ~/.config/)
 desktop/    desktop app recipes (*.ts)
 backups/    saved desktop app snapshots
 shell/      zsh modules loaded by shell/init.zsh
-install/    Brewfiles
+install/    Homebrew package manifest
 macos/      explicit macOS defaults scripts
 kernel/     dot CLI + recipe engine
 bin/        command wrappers symlinked into ~/bin
@@ -65,10 +66,11 @@ Roughly the order you'd run on a new machine:
 ```sh
 dot link                  # symlink home/ (incl. .config/) and bin/ into ~/bin
 dot loader                # place ~ loaders (backs up anything it overwrites)
-dot install               # brew bundle from install/Brewfile.core
+dot install               # brew install formulae from install/brew.json
+dot install cask          # optional GUI apps and fonts
 dot macos                 # macOS defaults; macos:opinionated adds personal prefs
 dot macos:opinionated
-dot doctor                # core tools + link state; `dot doctor cursor` for one recipe
+dot doctor                # formulae tools + link state; `dot doctor cursor` for one recipe
 dot desktop               # list app recipes with snapshot state
 dot status                # drift: repo uncommitted changes + live app config vs backup
 

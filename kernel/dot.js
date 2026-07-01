@@ -12,36 +12,12 @@ const dot = resolve(import.meta.dir, "..")
 const home = homedir()
 const stamp = new Date().toISOString().replaceAll(/[-:T.Z]/g, "").slice(0, 14)
 
-const commands = [
-  "git",
-  "bun",
-  "uv",
-  "mise",
-  "rg",
-  "ast-grep",
-  "fd",
-  "jq",
-  "yq",
-  "delta",
-  "zoxide",
-  "direnv",
-  "xh",
-  "sd",
-  "hyperfine",
-  "just",
-  "git-absorb",
-  "atuin",
-  "prettier",
-  "fzf",
-  "bat",
-  "tree",
-  "eza",
-]
+const brewfile = join(dot, "install", "brew.json")
 
 function help() {
   const groups = [
     ["setup", [
-      ["install", "brew bundle install/Brewfile.core"],
+      ["install", "brew install from install/brew.json (default: formulae; pass cask/all)"],
       ["link", "link home/* and config/*, copy bin/* into ~/bin"],
       ["loader", "copy loader/home/* into ~ (backs up anything it overwrites)"],
       ["unlink", "remove links owned by this tree"],
@@ -55,7 +31,7 @@ function help() {
     ]],
     ["status", [
       ["status", "drift: repo uncommitted changes + live app config vs backup"],
-      ["doctor", "core tool + link state, or doctor <app> to inspect one recipe"],
+      ["doctor", "formulae tools + link state, or doctor <app> to inspect one recipe"],
     ]],
   ]
 
@@ -69,6 +45,30 @@ function help() {
 
 function command(name) {
   return spawnSync("zsh", ["-lc", `command -v ${name}`], { stdio: "ignore" }).status === 0
+}
+
+function run(tool, args) {
+  const result = spawnSync(tool, args, { stdio: "inherit" })
+  if (result.status !== 0) throw new Error(`${tool} ${args.join(" ")} failed`)
+}
+
+async function catalog() {
+  return Bun.file(brewfile).json()
+}
+
+function formula(spec) {
+  if (typeof spec === "string") return { name: spec, cli: spec }
+  const [[name, cli]] = Object.entries(spec)
+  return { name, cli }
+}
+
+async function brews(group = "formulae") {
+  const manifest = await catalog()
+  const formulae = manifest.formulae.map(formula).map(({ name }) => name)
+  if (group === "formulae") return { formulae, cask: [] }
+  if (group === "cask") return { formulae: [], cask: manifest.cask }
+  if (group === "all") return { formulae, cask: manifest.cask }
+  throw Object.assign(new Error(`unknown install group: ${group}\nsupported install groups: ${Object.keys(manifest).join(", ")}, all`), { code: 2 })
 }
 
 async function owned(target) {
@@ -148,7 +148,9 @@ async function doctor(id) {
   console.log(bold("dot") + " " + dim(dot))
   console.log(`${dim("shim")} ${existsSync(join(home, ".zshrc")) ? green("~/.zshrc") : red("~/.zshrc missing")}`)
 
-  for (const name of commands) {
+  for (const { cli } of (await catalog()).formulae.map(formula)) {
+    if (!cli) continue
+    const name = cli
     console.log(`${command(name) ? mark.ok : mark.bad} ${name}`)
   }
 
@@ -168,8 +170,11 @@ async function status(id) {
   await desktopStatus(id)
 }
 
-async function install() {
-  await $`brew bundle --file=${join(dot, "install", "Brewfile.core")}`
+async function install(group = "formulae") {
+  const { formulae, cask } = await brews(group)
+
+  if (formulae.length) run("brew", ["install", ...formulae])
+  if (cask.length) run("brew", ["install", "--cask", ...cask])
 }
 
 async function macos(file = "defaults.zsh") {
