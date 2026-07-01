@@ -30,7 +30,7 @@ function label(recipe) {
 }
 
 function known(recipes, id) {
-  const recipe = new Map(recipes.map(recipe => [recipe.id, recipe])).get(String(id ?? "").toLowerCase())
+  const recipe = recipes.find(recipe => recipe.id === String(id ?? "").toLowerCase())
   if (recipe) return recipe
   throw new CliError(`unknown desktop app: ${id ?? ""}\nsupported desktop apps: ${recipes.map(recipe => recipe.id).join(", ")}`, 2)
 }

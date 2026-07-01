@@ -1,25 +1,3 @@
-import { recipe } from "../kernel/desktop/recipe"
+import { vscodish } from "../kernel/desktop/recipe"
 
-export default recipe("cursor", "Cursor.app", "Cursor/User", {
-  files: ["settings.json", "keybindings.json", "snippets"],
-  available: c => c.app() && c.command("cursor"),
-  async save(c) {
-    const ids = (await c.output("cursor", ["--list-extensions"]))
-      .split(/\r?\n/)
-      .map(line => line.trim())
-      .filter(Boolean)
-      .sort()
-      .join("\n")
-
-    await c.write("extensions.txt", `${ids}\n`)
-  },
-  async restore(c) {
-    for (const id of await c.lines("extensions.txt")) await c.run("cursor", ["--install-extension", id])
-  },
-  async ["@save"](c) {
-    await c.write("extensions.txt")
-  },
-  async ["@restore"](c) {
-    if (c.exists("extensions.txt")) console.log(`restore extensions from ${c.repo("extensions.txt")}`)
-  },
-})
+export default vscodish("cursor", "Cursor.app", "Cursor/User", "cursor", ["settings.json", "keybindings.json", "snippets"])

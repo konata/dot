@@ -31,3 +31,22 @@ export type Recipe = { id: string; app: string; root: string[]; files: string[];
 export function recipe(id: string, app: string, root: string, options: Options = {}): Recipe {
   return { id, app, root: root.split("/"), ...options, files: options.files ?? [], ignore: options.ignore ?? [] }
 }
+
+// VS Code-family editors: back up settings plus the extension list via the app's CLI
+export function vscodish(id: string, app: string, root: string, cli: string, files: string[] = ["settings.json"]): Recipe {
+  return recipe(id, app, root, {
+    files,
+    available: c => c.app() && c.command(cli),
+    async save(c) {
+      const ids = (await c.output(cli, ["--list-extensions"])).split(/\r?\n/).map(line => line.trim()).filter(Boolean).sort().join("\n")
+      await c.write("extensions.txt", `${ids}\n`)
+    },
+    async restore(c) {
+      for (const id of await c.lines("extensions.txt")) await c.run(cli, ["--install-extension", id])
+    },
+    async ["@save"](c) { await c.write("extensions.txt") },
+    async ["@restore"](c) {
+      if (c.exists("extensions.txt")) console.log(`restore extensions from ${c.repo("extensions.txt")}`)
+    },
+  })
+}

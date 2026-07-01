@@ -212,13 +212,7 @@ async function binState() {
 async function prepareBin() {
   const target = join(home, "bin")
   const stat = await lstat(target).catch(() => null)
-
-  if (stat?.isSymbolicLink()) {
-    await rename(target, `${target}.bak.${stamp}`)
-  } else if (stat && !stat.isDirectory()) {
-    await rename(target, `${target}.bak.${stamp}`)
-  }
-
+  if (stat && !stat.isDirectory()) await rename(target, `${target}.bak.${stamp}`)
   await mkdir(target, { recursive: true })
 }
 
