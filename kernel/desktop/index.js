@@ -5,7 +5,7 @@ import { doctor as inspect, list, restore as restoreRecipe, save as saveRecipe, 
 const definitions = resolve(import.meta.dir, "../../desktop")
 const recipes = await Array.fromAsync(new Bun.Glob("*.ts").scan({ cwd: definitions }))
   .then(files => Promise.all(files.sort().map(file => import(pathToFileURL(join(definitions, file)).href))))
-  .then(modules => modules.map(module => module.default).sort((left, right) => left.id.localeCompare(right.id)))
+  .then(modules => modules.flatMap(module => [module.default].flat()).sort((left, right) => left.id.localeCompare(right.id)))
 
 export const desktop = () => list(recipes)
 export const doctor = id => inspect(recipes, id)

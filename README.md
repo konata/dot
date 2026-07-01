@@ -106,7 +106,8 @@ copied, not symlinked. Extension lists aren't diffed; run `save` to refresh them
 - `options.available` / `save` / `restore` — optional hooks; `@save` / `@restore`
   are dry-run-only previews
 
-Examples (each is the `export default` of its own `desktop/<id>.ts`):
+A `desktop/*.ts` file `export default`s one recipe, or an array of them to group
+related apps in one file. The shapes:
 
 ```ts
 // only files — list exactly what to back up
