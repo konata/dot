@@ -17,8 +17,7 @@ dot install
 ## Layout
 
 ```text
-home/       files linked into $HOME
-config/     selected files linked into $HOME/.config
+home/       mirror of $HOME, linked in (incl. home/.config/ → ~/.config/)
 desktop/    desktop app recipes (*.ts)
 backups/    saved desktop app snapshots
 shell/      zsh modules loaded by shell/init.zsh
@@ -30,8 +29,8 @@ loader/     ~ loaders, copied manually
 ```
 
 Each `~` config file is a thin **loader**: it pulls in the tracked source — shell
-modules under `shell/`, or the `_`-prefixed cores under `config/` (`config/git/_config`,
-`config/vim/_vimrc`, `config/ideavim/_ideavimrc`). Third-party edits and tool writes
+modules under `shell/`, or the `_`-prefixed cores under `home/.config/`
+(`home/.config/git/_config`, `home/.config/vim/_vimrc`). Third-party edits and tool writes
 (`git config --global`, installer appends) then land in the loader, never in the repo.
 `~/.zshrc`, `~/.gitconfig`, `~/.vimrc`, and `~/.ideavimrc` are all loaders; a fresh
 loader is nearly empty since the content lives in the repo.
@@ -55,7 +54,7 @@ dot loader
 Roughly the order you'd run on a new machine:
 
 ```sh
-dot link                  # symlink home/ + config/, copy bin/ into ~/bin
+dot link                  # symlink home/ (incl. .config/), copy bin/ into ~/bin
 dot loader                # place ~ loaders (backs up anything it overwrites)
 dot install               # brew bundle from install/Brewfile.core
 dot macos                 # macOS defaults; macos:opinionated adds personal prefs

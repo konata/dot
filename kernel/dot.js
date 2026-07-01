@@ -89,14 +89,10 @@ async function files(root) {
     .then(names => names.filter(name => !name.includes(".DS_Store")))
 }
 
+// home/ mirrors $HOME verbatim (home/.config/... → ~/.config/...)
 async function links() {
-  const homes = (await files(join(dot, "home")))
+  return (await files(join(dot, "home")))
     .map(name => [join(dot, "home", name), join(home, name)])
-
-  const configs = (await files(join(dot, "config")))
-    .map(name => [join(dot, "config", name), join(home, ".config", name)])
-
-  return [...homes, ...configs]
 }
 
 async function connect(source, target) {
