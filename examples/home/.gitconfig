@@ -1,0 +1,5 @@
+; Loader: the tracked config lives in the repo (~/.config/git/_config). This file
+; starts empty — machine-local settings and any `git config --global` writes land
+; here, in your own untracked file, never touching the tracked config.
+[include]
+	path = ~/.config/git/_config

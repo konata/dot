@@ -1,0 +1,3 @@
+" Loader: the tracked config lives in the repo (~/.config/ideavim/_ideavimrc).
+" Add machine-local IdeaVim settings below.
+source ~/.config/ideavim/_ideavimrc

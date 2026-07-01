@@ -1,5 +1,6 @@
-[include]
-	path = ~/.gitconfig.local
+[user]
+	name = konata
+	email = beriru@qq.com
 [alias]
 	st = status
 	ci = commit
@@ -18,14 +19,13 @@
 [color]
 	ui = true
 [core]
-	excludesfile = ~/ignore
+	excludesfile = ~/.config/git/_ignore
 	pager = delta
 	symlinks = true
 	quotepath = false
 	longpaths = true
 	autocrlf = input
 	trustctime = false
-	attributesfile = ~/.attributes_global
 	ignorecase = true
 [init]
 	defaultBranch = main

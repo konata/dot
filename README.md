@@ -27,23 +27,28 @@ macos/      explicit macOS defaults scripts
 scripts/    Bun management commands
 bin/        command wrappers copied into ~/bin
 examples/   starter files laid out like their target roots
-vim/        Vim config loaded by home/.vimrc
 ```
 
-`~/.zshrc` stays as a local shim, so third-party shell edits stay out of this
-repo:
+Each `~` config file is a thin **loader**: it pulls in the tracked source — shell
+modules under `shell/`, or the `_`-prefixed cores under `config/` (`config/git/_config`,
+`config/vim/_vimrc`, `config/ideavim/_ideavimrc`). Third-party edits and tool writes
+(`git config --global`, installer appends) then land in the loader, never in the repo.
+`~/.zshrc`, `~/.gitconfig`, `~/.vimrc`, and `~/.ideavimrc` are all loaders; a fresh
+loader is nearly empty since the content lives in the repo.
 
 ```zsh
+# ~/.zshrc
 export DOT_HOME="${DOT_HOME:-$HOME/dot}"
 [[ -r "$DOT_HOME/shell/init.zsh" ]] && source "$DOT_HOME/shell/init.zsh"
 ```
 
-Starter files are copied manually:
+Loaders are copied manually (they are starters, not linked):
 
 ```sh
-cp ~/dot/examples/home/.zshrc ~/.zshrc
-cp ~/dot/examples/home/.vimrc ~/.vimrc
-cp ~/dot/examples/home/.gitconfig.local ~/.gitconfig.local
+cp ~/dot/examples/home/.zshrc     ~/.zshrc
+cp ~/dot/examples/home/.gitconfig ~/.gitconfig
+cp ~/dot/examples/home/.vimrc     ~/.vimrc
+cp ~/dot/examples/home/.ideavimrc ~/.ideavimrc
 ```
 
 ## Commands
