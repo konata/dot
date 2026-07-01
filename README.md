@@ -55,33 +55,36 @@ bun run install
 
 # 2. symlink home/ into ~, config/ into ~/.config, copy bin/ into ~/bin
 #    existing regular files are moved aside to <name>.bak.<stamp> first
+#    this also puts the `dot` wrapper on your PATH (~/bin/dot)
 bun run link
 
+# from here `dot <command>` works directly
+
 # 3. apply macOS defaults (opinionated layers on personal preferences)
-bun run macos
-bun run macos:opinionated
+dot macos
+dot macos:opinionated
 
 # 4. sanity check: core tools present, links owned by this tree
-bun run doctor
+dot doctor
 
 # 5. list desktop apps that have a recipe, with snapshot state
-bun run desktop
+dot desktop
 
 # 6. restore an app's config onto this machine
 #    --dry previews; without it, changed files move aside to <name>.bak.<stamp>
-bun run restore -- cursor --dry
-bun run restore -- cursor
+dot restore cursor --dry
+dot restore cursor
 
 # later: after editing settings, snapshot them back into the repo
 #    --dry previews; a repeat save with no changes prints "nothing to save"
-bun run save -- cursor --dry
-bun run save -- cursor
+dot save cursor --dry
+dot save cursor
 
 # inspect one recipe: resolved paths, availability, which files exist
-bun run doctor cursor
+dot doctor cursor
 
 # tear down: remove every symlink this repo owns
-bun run unlink
+dot unlink
 ```
 
 ## Desktop Backups
