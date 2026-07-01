@@ -106,39 +106,37 @@ copied, not symlinked. Extension lists aren't diffed; run `save` to refresh them
 - `options.available` / `save` / `restore` — optional hooks; `@save` / `@restore`
   are dry-run-only previews
 
-A `desktop/*.ts` file `export default`s one recipe, or an array of them to group
-related apps in one file. The shapes:
+A `desktop/*.ts` file `export default`s one recipe, or an array to group related
+apps in one file — a whole file looks like this:
 
 ```ts
-// only files — list exactly what to back up
-recipe("sublime", "Sublime Text.app", "Sublime Text/Packages/User", {
-  files: ["Preferences.sublime-settings", "Default (OSX).sublime-keymap"],
-})
+import { recipe } from "../kernel/desktop/recipe"
 
-// only ignore — everything under root minus the noise
-recipe("clash", "Clash Verge.app", "io.github.clash-verge-rev.clash-verge", {
-  ignore: ["*.log", "cache/**"],
-})
+export default [
+  // only files — list exactly what to back up
+  recipe("sublime", "Sublime Text.app", "Sublime Text/Packages/User", {
+    files: ["Preferences.sublime-settings", "Default (OSX).sublime-keymap"],
+  }),
 
-// both — a folder of proxy configs, minus its logs
-recipe("clash", "Clash Verge.app", "io.github.clash-verge-rev.clash-verge", {
-  files: ["profiles"],
-  ignore: ["profiles/*.log"],
-})
+  // only ignore — everything under root, minus the noise
+  recipe("clash", "Clash Verge.app", "io.github.clash-verge-rev.clash-verge", {
+    ignore: ["*.log", "cache/**"],
+  }),
 
-// with hooks — save extension IDs and reinstall them on restore
-recipe("code", "Visual Studio Code.app", "Code/User", {
-  files: ["settings.json"],
-  available: c => c.app() && c.command("code"),
-  async save(c) {
-    const ids = (await c.output("code", ["--list-extensions"])).trim()
-    await c.write("extensions.txt", `${ids}\n`)
-  },
-  async restore(c) {
-    for (const id of await c.lines("extensions.txt")) await c.run("code", ["--install-extension", id])
-  },
-  async ["@save"](c) { await c.write("extensions.txt") },
-})
+  // with hooks — save extension IDs and reinstall them on restore
+  recipe("code", "Visual Studio Code.app", "Code/User", {
+    files: ["settings.json"],
+    available: c => c.app() && c.command("code"),
+    async save(c) {
+      const ids = (await c.output("code", ["--list-extensions"])).trim()
+      await c.write("extensions.txt", `${ids}\n`)
+    },
+    async restore(c) {
+      for (const id of await c.lines("extensions.txt")) await c.run("code", ["--install-extension", id])
+    },
+    async ["@save"](c) { await c.write("extensions.txt") },
+  }),
+]
 ```
 
 ## Private Layer
