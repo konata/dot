@@ -27,14 +27,19 @@ type Options = {
 
 export type Recipe = { id: string; app: string; root: string[]; files: string[]; ignore: string[] } & Options
 
-// files defaults to everything under root; ignore prunes from it (exclude wins)
+// root is relative to $HOME; use support() for the common ~/Library/Application Support case
 export function recipe(id: string, app: string, root: string, options: Options = {}): Recipe {
   return { id, app, root: root.split("/"), ...options, files: options.files ?? [], ignore: options.ignore ?? [] }
 }
 
-// VS Code-family editors: back up settings plus the extension list via the app's CLI
+// a path under ~/Library/Application Support, as a $HOME-relative root
+export function support(path: string): string {
+  return `Library/Application Support/${path}`
+}
+
+// VS Code-family editors live in Application Support; back up settings + the extension list via the CLI
 export function vscodish(id: string, app: string, root: string, cli: string, files: string[] = ["settings.json"]): Recipe {
-  return recipe(id, app, root, {
+  return recipe(id, app, support(root), {
     files,
     available: c => c.app() && c.command(cli),
     async save(c) {

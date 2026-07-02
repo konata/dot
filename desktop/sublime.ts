@@ -1,6 +1,6 @@
-import { recipe } from "../kernel/desktop/recipe"
+import { recipe, support } from "../kernel/desktop/recipe"
 
-export default recipe("sublime", "Sublime Text.app", "Sublime Text/Packages/User", {
+export default recipe("sublime", "Sublime Text.app", support("Sublime Text/Packages/User"), {
   files: [
     "Preferences.sublime-settings",
     "Default (OSX).sublime-keymap",

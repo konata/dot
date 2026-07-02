@@ -7,7 +7,6 @@ import { bold, dim, green, mark, red, yellow } from "../ui.js"
 
 const dot = resolve(import.meta.dir, "../..")
 const home = homedir()
-const support = join(home, "Library", "Application Support")
 
 class CliError extends Error {
   constructor(message, code = 1) {
@@ -37,7 +36,7 @@ function known(recipes, id) {
 
 function context(recipe, options = {}) {
   const repo = (...parts) => join(dot, "backups", recipe.id, ...parts)
-  const target = (...parts) => join(support, ...recipe.root, ...parts)
+  const target = (...parts) => join(home, ...recipe.root, ...parts)
   const changes = []
 
   return {

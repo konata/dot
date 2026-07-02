@@ -112,8 +112,9 @@ copied, not symlinked. Extension lists aren't diffed; run `save` to refresh them
 - `id` — the command name and the `backups/<id>` snapshot folder
 - `app` — the `.app` bundle name, looked up under `/Applications` and
   `~/Applications` to decide availability
-- `root` — path **under `~/Library/Application Support`** holding the app's
-  config (`"Code/User"` → `~/Library/Application Support/Code/User`)
+- `root` — a **`$HOME`-relative** path to the app's config; `support("Code/User")`
+  targets `~/Library/Application Support/Code/User` for the common case, but any
+  path under `~` works
 - `options.files` — include patterns (names, directories, or `Bun.Glob` globs)
   relative to `root`; **omit to take everything under `root`**. A directory is
   backed up recursively, so a folder of many or unpredictably-named files just
@@ -126,21 +127,21 @@ A `desktop/*.ts` file `export default`s one recipe, or an array to group related
 apps in one file — a whole file looks like this:
 
 ```ts
-import { recipe } from "../kernel/desktop/recipe"
+import { recipe, support } from "../kernel/desktop/recipe"
 
 export default [
   // only files — list exactly what to back up
-  recipe("sublime", "Sublime Text.app", "Sublime Text/Packages/User", {
+  recipe("sublime", "Sublime Text.app", support("Sublime Text/Packages/User"), {
     files: ["Preferences.sublime-settings", "Default (OSX).sublime-keymap"],
   }),
 
   // only ignore — everything under root, minus the noise
-  recipe("clash", "Clash Verge.app", "io.github.clash-verge-rev.clash-verge", {
+  recipe("clash", "Clash Verge.app", support("io.github.clash-verge-rev.clash-verge"), {
     ignore: ["*.log", "cache/**"],
   }),
 
   // with hooks — save extension IDs and reinstall them on restore
-  recipe("code", "Visual Studio Code.app", "Code/User", {
+  recipe("code", "Visual Studio Code.app", support("Code/User"), {
     files: ["settings.json"],
     available: c => c.app() && c.command("code"),
     async save(c) {
