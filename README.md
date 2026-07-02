@@ -30,7 +30,6 @@ apps and fonts.
 home/       mirror of $HOME, linked in (incl. home/.config/ → ~/.config/)
 desktop/    desktop app recipes (*.ts)
 backups/    saved desktop app snapshots
-shell/      zsh modules loaded by shell/init.zsh
 install/    Homebrew package manifest
 macos/      explicit macOS defaults scripts
 kernel/     dot CLI + recipe engine
@@ -38,9 +37,9 @@ bin/        command wrappers symlinked into ~/bin
 loader/     ~ loaders, copied manually
 ```
 
-Each `~` config file is a thin **loader**: it pulls in the tracked source — shell
-modules under `shell/`, or the `_`-prefixed cores under `home/.config/`
-(`home/.config/git/_config`, `home/.config/vim/_vimrc`). Third-party edits and tool writes
+Each `~` config file is a thin **loader**: it pulls in the tracked core under
+`home/.config/` — the zsh modules in `home/.config/zsh/`, or the `_`-prefixed
+files (`home/.config/git/_config`, `home/.config/vim/_vimrc`). Third-party edits and tool writes
 (`git config --global`, installer appends) then land in the loader, never in the repo.
 `~/.zshrc`, `~/.gitconfig`, `~/.vimrc`, and `~/.ideavimrc` are all loaders; a fresh
 loader is nearly empty since the content lives in the repo.
@@ -48,7 +47,7 @@ loader is nearly empty since the content lives in the repo.
 ```zsh
 # ~/.zshrc
 export DOT_HOME="${DOT_HOME:-$HOME/dot}"
-[[ -r "$DOT_HOME/shell/init.zsh" ]] && source "$DOT_HOME/shell/init.zsh"
+[[ -r ~/.config/zsh/init.zsh ]] && source ~/.config/zsh/init.zsh
 ```
 
 `dot loader` places them into `~` (they are copied, not linked, so your local
@@ -157,7 +156,7 @@ assets, and host-specific patches.
 Load order:
 
 ```text
-~/dot/shell/[0-9][0-9]-*.zsh
+~/.config/zsh/[0-9][0-9]-*.zsh
 ~/.privately/*.rc
 ```
 
