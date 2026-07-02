@@ -116,7 +116,7 @@ async function connect(source, target) {
     if (current === source) return console.log(`${mark.ok} ${dim(relative(home, target))}`)
     await rm(target)
   } else if (stat) {
-    await rename(target, `${target}.bak.${stamp}`)
+    await rename(target, `${target}.${stamp}.dotbackup`)
   }
 
   await mkdir(dirname(target), { recursive: true })
@@ -139,7 +139,7 @@ async function loader() {
   for (const [source, target] of await loaders()) {
     const stat = await lstat(target).catch(() => null)
     if (stat && (await same(source, target))) { console.log(`${mark.ok} ${dim(relative(home, target))}`); continue }
-    if (stat) await rename(target, `${target}.bak.${stamp}`)
+    if (stat) await rename(target, `${target}.${stamp}.dotbackup`)
     await mkdir(dirname(target), { recursive: true })
     await copyFile(source, target)
     console.log(stat ? `${mark.change} ${dim(relative(home, target))} ${dim("(backed up)")}` : `${mark.add} ${dim(relative(home, target))}`)

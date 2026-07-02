@@ -59,7 +59,7 @@ a fresh loader is nearly empty since the content lives in the repo.
 
 `dot loader` places them into `~` (they are copied, not linked, so your local
 edits and tool writes stay out of the repo). It is a one-time init step; anything
-already there is backed up to `<name>.bak.<stamp>` before being overwritten.
+already there is backed up to `<name>.<stamp>.dotbackup` before being overwritten.
 
 ```sh
 dot loader
@@ -80,7 +80,7 @@ dot doctor                # formulae tools + link state; `dot doctor cursor` for
 dot desktop               # list app recipes with snapshot state
 dot status                # drift: repo uncommitted changes + live app config vs backup
 
-dot restore cursor --dry  # preview; without --dry, changed files move to <name>.bak.<stamp>
+dot restore cursor --dry  # preview; without --dry, changed files move to <name>.<stamp>.dotbackup
 dot restore cursor
 
 dot save cursor --dry     # preview; a repeat save with no change prints "nothing to save"
@@ -99,7 +99,7 @@ and `sublime`.
 `save <app>` diffs each file against its backup and copies only what changed,
 pruning stale entries and reporting `nothing to save` when in sync. `restore
 <app>` skips files already matching, and for the rest moves the existing file
-aside to `<name>.bak.<stamp>` before writing. Both take `--dry`. Binary files are
+aside to `<name>.<stamp>.dotbackup` before writing. Both take `--dry`. Binary files are
 backed up too, with a warning. There is intentionally no `restore all`.
 
 `status` reports drift in two parts: the repo's uncommitted changes (`git`), and

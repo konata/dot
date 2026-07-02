@@ -164,8 +164,8 @@ async function expand(patterns, base) {
 }
 
 function excluder(recipe) {
-  // never capture our own artifacts: .DS_Store and restore's <name>.bak.<stamp>
-  const globs = ["**/.DS_Store", "**/*.bak.[0-9]*", ...recipe.ignore].map(pattern => new Bun.Glob(pattern))
+  // never capture our own artifacts: .DS_Store and restore's <name>.<stamp>.dotbackup
+  const globs = ["**/.DS_Store", "**/*.dotbackup", ...recipe.ignore].map(pattern => new Bun.Glob(pattern))
   return rel => globs.some(glob => glob.match(rel))
 }
 
@@ -234,7 +234,7 @@ async function recover(recipe, state) {
     if (!state.quiet) console.log(`${present ? mark.change : mark.add} ${dim(relative(home, target))}`)
     if (state.dry) continue
     if (present) {
-      const backup = `${target}.bak.${stamp}`
+      const backup = `${target}.${stamp}.dotbackup`
       await rename(target, backup)
       saved.push(relative(home, backup))
     }
