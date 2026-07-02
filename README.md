@@ -28,25 +28,31 @@ apps and fonts.
 ## Layout
 
 ```text
-home/       mirror of $HOME, linked in (incl. home/.config/ → ~/.config/)
+linker/     tree symlinked into ~ (linker/@home/ mirrors $HOME)
+loader/     tree copied into ~ (loader/@home/ mirrors $HOME; the loaders)
 desktop/    desktop app recipes (*.ts)
 backups/    saved desktop app snapshots
 install/    Homebrew package manifest
 macos/      explicit macOS defaults scripts
 kernel/     dot CLI + recipe engine
-loader/     ~ loaders, copied manually
 ```
 
+`@home/` names the `$HOME` target root — like a FileProvider mount point — so the
+tree is self-describing: `linker/@home/.config/git/_config` → `~/.config/git/_config`.
+`linker/` and `loader/` both hold a `@home/` mirror and differ only in mechanism:
+`linker/` is symlinked (the file *is* the live config), `loader/` is copied (the
+loaders, which absorb local edits so they never dirty the repo).
+
 Each `~` config file is a thin **loader**: it pulls in the tracked core under
-`home/.config/` — the zsh modules in `home/.config/zsh/`, or the `_`-prefixed
-files (`home/.config/git/_config`, `home/.config/vim/_vimrc`). Third-party edits and tool writes
-(`git config --global`, installer appends) then land in the loader, never in the repo.
-`~/.zshrc`, `~/.gitconfig`, `~/.vimrc`, and `~/.ideavimrc` are all loaders; a fresh
-loader is nearly empty since the content lives in the repo.
+`linker/@home/.config/` — the zsh modules in `linker/@home/.config/zsh/`, or the
+`_`-prefixed files (`linker/@home/.config/git/_config`, `linker/@home/.config/vim/_vimrc`).
+Third-party edits and tool writes (`git config --global`, installer appends) then
+land in the loader, never in the repo. `~/.zshrc`, `~/.gitconfig`, `~/.vimrc`, and
+`~/.ideavimrc` are all loaders; a fresh loader is nearly empty since the content
+lives in the repo.
 
 ```zsh
 # ~/.zshrc
-export DOT_HOME="${DOT_HOME:-$HOME/dot}"
 [[ -r ~/.config/zsh/init.zsh ]] && source ~/.config/zsh/init.zsh
 ```
 

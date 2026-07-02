@@ -19,7 +19,7 @@ function help() {
     ["setup", [
       ["install", "brew install from install/brew.json (default: formulae; pass cask/all)"],
       ["link", "symlink home/ (incl. .config) into ~"],
-      ["loader", "copy loader/home/* into ~ (backs up anything it overwrites)"],
+      ["loader", "copy loader/@home/* into ~ (backs up anything it overwrites)"],
       ["unlink", "remove links owned by this tree"],
       ["macos", "apply low-side-effect macOS defaults"],
       ["macos:opinionated", "apply personal macOS preferences"],
@@ -89,10 +89,10 @@ async function files(root) {
     .then(names => names.filter(name => !name.includes(".DS_Store")))
 }
 
-// home/ mirrors $HOME verbatim (home/.config/... → ~/.config/...)
+// linker/@home mirrors $HOME verbatim and symlinks it in (linker/@home/.config/X → ~/.config/X)
 async function links() {
-  return (await files(join(dot, "home")))
-    .map(name => [join(dot, "home", name), join(home, name)])
+  const root = join(dot, "linker", "@home")
+  return (await files(root)).map(name => [join(root, name), join(home, name)])
 }
 
 async function connect(source, target) {
@@ -116,9 +116,10 @@ async function link() {
   console.log(dim("run `dot loader` to place the ~ loaders"))
 }
 
+// loader/@home mirrors $HOME too, but the loaders are copied in, not linked
 async function loaders() {
-  return (await files(join(dot, "loader", "home")))
-    .map(name => [join(dot, "loader", "home", name), join(home, name)])
+  const root = join(dot, "loader", "@home")
+  return (await files(root)).map(name => [join(root, name), join(home, name)])
 }
 
 // one-time init: place the loaders, backing up anything already there (identical → skip)
