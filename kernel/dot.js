@@ -18,7 +18,7 @@ function help() {
   const groups = [
     ["setup", [
       ["install", "brew install from install/brew.json (default: formulae; pass cask/all)"],
-      ["link", "link home/* and config/*, copy bin/* into ~/bin"],
+      ["link", "symlink home/ (incl. .config) and bin/ into ~"],
       ["loader", "copy loader/home/* into ~ (backs up anything it overwrites)"],
       ["unlink", "remove links owned by this tree"],
       ["macos", "apply low-side-effect macOS defaults"],
