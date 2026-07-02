@@ -1,14 +1,14 @@
 # dot
 
 A macOS dotfile manager built on bun and Homebrew: shell modules, selected app
-configs, package lists, small wrappers, and macOS defaults. Local mutable state
+configs, package lists, and macOS defaults. Local mutable state
 lives outside the repository.
 
 ## Bootstrap
 
 On a fresh machine `bootstrap.zsh` is the cold start — it installs Homebrew and
-bun if missing, points `DOT_HOME` at this checkout, and defines a temporary
-`dot()` function in the current shell before `~/bin/dot` exists:
+bun if missing, points `DOT_HOME` at this checkout, and defines `dot()` in the
+current shell so the commands below run before your zsh config is set up:
 
 ```sh
 git clone git@github.com:konata/dot.git ~/dot
@@ -18,9 +18,10 @@ dot loader
 dot install
 ```
 
-Source it; direct execution cannot update your shell, and re-sourcing is safe.
-After `dot link` and a new shell, the normal `~/bin/dot` wrapper is on your PATH
-— see [Commands](#commands). Homebrew packages live in `install/brew.json`;
+Source it; direct execution cannot define a function in your shell, and
+re-sourcing is safe. In every later shell, `~/.config/zsh/init.zsh` (loaded via
+the `~/.zshrc` loader) defines `dot()` for you — see [Commands](#commands).
+Homebrew packages live in `install/brew.json`;
 `dot install` installs formulae, and `dot install cask` installs optional GUI
 apps and fonts.
 
@@ -33,7 +34,6 @@ backups/    saved desktop app snapshots
 install/    Homebrew package manifest
 macos/      explicit macOS defaults scripts
 kernel/     dot CLI + recipe engine
-bin/        command wrappers symlinked into ~/bin
 loader/     ~ loaders, copied manually
 ```
 
@@ -63,7 +63,7 @@ dot loader
 Roughly the order you'd run on a new machine:
 
 ```sh
-dot link                  # symlink home/ (incl. .config/) and bin/ into ~/bin
+dot link                  # symlink home/ (incl. .config/) into ~
 dot loader                # place ~ loaders (backs up anything it overwrites)
 dot install               # brew install formulae from install/brew.json
 dot install cask          # optional GUI apps and fonts

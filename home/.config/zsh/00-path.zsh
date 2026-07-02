@@ -1,5 +1,3 @@
-export DOT_HOME="${DOT_HOME:-$HOME/dot}"
-
 typeset -U path PATH
 path=(/bin /usr/bin /usr/local/bin /sbin /usr/sbin)
 

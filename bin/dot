@@ -1,3 +1,0 @@
-#!/bin/zsh
-exec bun "${DOT_HOME:-$HOME/dot}/kernel/dot.js" "$@"
-

@@ -18,7 +18,7 @@ function help() {
   const groups = [
     ["setup", [
       ["install", "brew install from install/brew.json (default: formulae; pass cask/all)"],
-      ["link", "symlink home/ (incl. .config) and bin/ into ~"],
+      ["link", "symlink home/ (incl. .config) into ~"],
       ["loader", "copy loader/home/* into ~ (backs up anything it overwrites)"],
       ["unlink", "remove links owned by this tree"],
       ["macos", "apply low-side-effect macOS defaults"],
@@ -89,11 +89,10 @@ async function files(root) {
     .then(names => names.filter(name => !name.includes(".DS_Store")))
 }
 
-// home/ mirrors $HOME verbatim (home/.config/... → ~/.config/...); bin/ symlinks into ~/bin
+// home/ mirrors $HOME verbatim (home/.config/... → ~/.config/...)
 async function links() {
-  const homes = (await files(join(dot, "home"))).map(name => [join(dot, "home", name), join(home, name)])
-  const binaries = (await files(join(dot, "bin"))).map(name => [join(dot, "bin", name), join(home, "bin", name)])
-  return [...homes, ...binaries]
+  return (await files(join(dot, "home")))
+    .map(name => [join(dot, "home", name), join(home, name)])
 }
 
 async function connect(source, target) {
