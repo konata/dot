@@ -89,10 +89,23 @@ async function files(root) {
     .then(names => names.filter(name => !name.includes(".DS_Store")))
 }
 
-// linker/@home mirrors $HOME verbatim and symlinks it in (linker/@home/.config/X → ~/.config/X)
+// mount points → real base dirs (FileProvider-style); a tree adds an @mount subdir per root it uses
+const roots = { "@home": home, "@xdg": join(home, ".config") }
+
+// [source, target] pairs for linker/ or loader/, each @mount resolved to its base
+async function mounts(kind) {
+  const pairs = []
+  for (const [mount, base] of Object.entries(roots)) {
+    const root = join(dot, kind, mount)
+    if (!existsSync(root)) continue
+    for (const name of await files(root)) pairs.push([join(root, name), join(base, name)])
+  }
+  return pairs
+}
+
+// linker/@home/AGENTS.md → ~/AGENTS.md, linker/@xdg/git/_config → ~/.config/git/_config, …
 async function links() {
-  const root = join(dot, "linker", "@home")
-  return (await files(root)).map(name => [join(root, name), join(home, name)])
+  return mounts("linker")
 }
 
 async function connect(source, target) {
@@ -116,10 +129,9 @@ async function link() {
   console.log(dim("run `dot loader` to place the ~ loaders"))
 }
 
-// loader/@home mirrors $HOME too, but the loaders are copied in, not linked
+// loaders resolve the same mounts, but are copied in, not linked
 async function loaders() {
-  const root = join(dot, "loader", "@home")
-  return (await files(root)).map(name => [join(root, name), join(home, name)])
+  return mounts("loader")
 }
 
 // one-time init: place the loaders, backing up anything already there (identical → skip)
