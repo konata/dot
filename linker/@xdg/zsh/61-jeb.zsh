@@ -26,7 +26,3 @@ jeb() {
     _jeb "$JEB_HOME/jeb_macos.sh" "$@"
   } </dev/null >/dev/null 2>&1 &!
 }
-
-kfc() {
-  _jeb "$JEB_HOME/jeb_macos.sh" -c --srv2 --script="$JEB_HOME/coreplugins/kfc.py"
-}
