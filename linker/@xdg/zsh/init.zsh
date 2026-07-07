@@ -11,3 +11,7 @@ done
 for file in "$HOME"/.privately/*.rc(N); do
   source "$file"
 done
+
+for file in "$HOME"/.privately/*.sh(N); do
+  source "$file"
+done
