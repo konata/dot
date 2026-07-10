@@ -93,8 +93,8 @@ dot unlink                # remove every symlink this repo owns
 
 Desktop app recipes live in `desktop/*.ts` and are discovered automatically; each
 calls the typed `recipe()` factory (`kernel/desktop/recipe.ts`). Snapshots are
-stored in `backups/<app>`. Supported apps are currently `code`, `cursor`, `kiro`,
-and `sublime`.
+stored in `backups/<app>`. Supported apps are currently `code`, `cursor`, `ghostty`,
+`kiro`, and `sublime`.
 
 `save <app>` diffs each file against its backup and copies only what changed,
 pruning stale entries and reporting `nothing to save` when in sync. `restore
