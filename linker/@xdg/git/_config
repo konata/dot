@@ -78,7 +78,6 @@
 	defaultRemote = origin
 [http]
 	cookiefile = ~/.gitcookies
-	sslBackend = openssl
 	postBuffer = 524288000
 [credential "https://github.com"]
 	helper = 
