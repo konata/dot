@@ -1,5 +1,5 @@
 [[ -n "${DOT_SHELL_LOADED:-}" ]] && return
-export DOT_SHELL_LOADED=1
+typeset -g DOT_SHELL_LOADED=1
 export DOT_HOME="${DOT_HOME:-$HOME/dot}"
 
 dot() { bun "$DOT_HOME/kernel/dot.js" "$@" }
