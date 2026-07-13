@@ -52,14 +52,6 @@
       "<C-f>": false
   },
   "terminal.integrated.sendKeybindingsToShell": true,
-  "terminal.integrated.profiles.osx": {
-      "zsh (login)": {
-          "path": "zsh",
-          "args": [
-              "-l"
-          ]
-      }
-  },
   "editor.fontFamily": "\"Hack Nerd Font\"",
   "editor.suggestSelection": "first",
   "security.workspace.trust.untrustedFiles": "open",
@@ -126,9 +118,6 @@
   },
   "[python]": {
       "editor.formatOnType": true
-  },
-  "terminal.integrated.env.osx": {
-      "FIG_NEW_SESSION": "1"
   },
   "editor.fontSize": 14,
   "explorer.confirmDragAndDrop": false,

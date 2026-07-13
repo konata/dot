@@ -13,12 +13,11 @@ alias aliases="alias | sed 's/=.*//'"
 alias fnames="functions | sed -n 's/^\\([^ ]*\\) ().*/\\1/p'"
 alias paths='print -l ${(s/:/)PATH}'
 alias ag=rg
-alias op=open
 alias zip="zip -x '*.DS_Store' -x '*__MACOSX*' -x '*.AppleDouble*'"
-alias cpwd="pwd | tr -d '\n' | pbcopy"
+alias cpwd="pwd | tr -d '\n' | clip"
 
 ff() {
-  fzf --bind "enter:execute(echo -n {} | pbcopy)+abort"
+  fzf --bind "enter:execute(echo -n {} | clip)+abort"
 }
 
 ga() {

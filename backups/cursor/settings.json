@@ -30,12 +30,6 @@
     "<C-f>": false
   },
   "terminal.integrated.sendKeybindingsToShell": true,
-  "terminal.integrated.profiles.osx": {
-    "zsh (login)": {
-      "path": "zsh",
-      "args": ["-l"]
-    }
-  },
   "editor.suggestSelection": "first",
   "security.workspace.trust.untrustedFiles": "open",
   "files.exclude": {
@@ -196,11 +190,9 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "editor.tabSize": 2,
-  "Notes.notesLocation": "/Users/natsuki/Desktop/Notes",
   "[less]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "settingsSync.ignoredSettings": ["Notes.notesLocation"],
   "kotlin.languageServer.enabled": false,
   "kotlin.debugAdapter.enabled": false,
   "[yaml]": {
@@ -210,9 +202,6 @@
   "remote.SSH.defaultExtensions": ["gitpod.gitpod-remote-ssh"],
   "[python]": {
     "editor.formatOnType": true
-  },
-  "terminal.integrated.env.osx": {
-    "FIG_NEW_SESSION": "1"
   },
   "remote.SSH.remotePlatform": {
     "*.gitpod.io": "linux"

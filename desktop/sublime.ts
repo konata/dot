@@ -1,9 +1,12 @@
-import { recipe, support } from "../kernel/desktop/recipe"
+import { platform, recipe, support } from "../kernel/desktop/recipe"
 
-export default recipe("sublime", "Sublime Text.app", support("Sublime Text/Packages/User"), {
+export default recipe("sublime", "Sublime Text.app", platform({
+  darwin: support("Sublime Text/Packages/User"),
+  default: ".config/sublime-text/Packages/User",
+}), {
   files: [
     "Preferences.sublime-settings",
-    "Default (OSX).sublime-keymap",
     "Package Control.sublime-settings",
   ],
+  available: c => c.command("subl"),
 })

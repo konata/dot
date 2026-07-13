@@ -9,7 +9,7 @@
         "command": "-code-runner.run"
     },
     {
-        "key": "cmd+/",
+        "key": "ctrl+/",
         "command": "macros.commentLine",
         "when": "editorTextFocus && !editorReadonly"
     },
@@ -43,23 +43,23 @@
         "when": "editorFocus"
     },
     {
-        "key": "shift+cmd+w",
+        "key": "ctrl+shift+w",
         "command": "-workbench.action.closeWindow"
     },
     {
-        "key": "shift+cmd+w",
+        "key": "ctrl+shift+w",
         "command": "workbench.action.showCommands"
     },
     {
-        "key": "shift+cmd+a",
+        "key": "ctrl+shift+a",
         "command": "-workbench.action.showCommands"
     },
     {
-        "key": "cmd+i",
+        "key": "ctrl+shift+i",
         "command": "composerMode.agent"
     },
     {
-        "key": "alt+cmd+s",
+        "key": "ctrl+alt+s",
         "command": "workbench.action.toggleUnifiedSidebarFromKeyboard",
         "when": "cursor.agentIdeUnification.enabled == true && !isAuxiliaryWindowFocusedContext"
     }

@@ -21,7 +21,7 @@
   {
     "context": "Editor && mode == full",
     "bindings": {
-      "cmd-g": [
+      "ctrl-g": [
         "buffer_search::Deploy",
         {
           "selection_search_enabled": true,
@@ -38,13 +38,13 @@
   {
     "context": "Editor",
     "unbind": {
-      "cmd-shift-i": "editor::Format",
+      "ctrl-shift-i": "editor::Format",
     },
   },
   {
     "context": "Editor && mode == full",
     "unbind": {
-      "alt-cmd-l": [
+      "alt-ctrl-l": [
         "buffer_search::Deploy",
         {
           "selection_search_enabled": true,
@@ -55,25 +55,25 @@
   {
     "context": "BufferSearchBar",
     "bindings": {
-      "cmd-g": "search::ToggleSelection",
+      "ctrl-g": "search::ToggleSelection",
     },
   },
   {
     "context": "BufferSearchBar",
     "unbind": {
-      "alt-cmd-l": "search::ToggleSelection",
+      "alt-ctrl-l": "search::ToggleSelection",
     },
   },
   {
     "context": "Pane",
     "bindings": {
-      "cmd-g": "search::ToggleSelection",
+      "ctrl-g": "search::ToggleSelection",
     },
   },
   {
     "context": "Pane",
     "unbind": {
-      "alt-cmd-l": "search::ToggleSelection",
+      "alt-ctrl-l": "search::ToggleSelection",
     },
   },
   {
@@ -84,7 +84,7 @@
   },
   {
     "bindings": {
-      "cmd-i": ["agent::NewExternalAgentThread", { "agent": { "custom": { "name": "codex-acp" } } }],
+      "ctrl-shift-a": ["agent::NewExternalAgentThread", { "agent": { "custom": { "name": "codex-acp" } } }],
     },
   },
 ]

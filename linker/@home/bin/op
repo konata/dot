@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if [ "$(uname -s)" = Darwin ]; then exec open "$@"; fi
+if command -v xdg-open >/dev/null 2>&1; then exec xdg-open "$@"; fi
+if command -v gio >/dev/null 2>&1; then exec gio open "$@"; fi
+if command -v wslview >/dev/null 2>&1; then exec wslview "$@"; fi
+
+echo "op: no desktop opener found" >&2
+exit 1

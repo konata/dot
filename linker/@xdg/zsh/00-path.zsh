@@ -1,5 +1,5 @@
 typeset -U path PATH
-path=(/bin /usr/bin /usr/local/bin /sbin /usr/sbin)
+path=(/usr/local/bin /usr/local/sbin /usr/bin /usr/sbin /bin /sbin $path)
 
 prepend-path() {
   [[ -d "$1" ]] || return
@@ -10,4 +10,3 @@ prepend-path "$HOME/bin"
 prepend-path "$HOME/exec"
 prepend-path "$HOME/.local/bin"
 export PATH
-

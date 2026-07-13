@@ -9,6 +9,6 @@ export FZF_DEFAULT_OPTS="
 --prompt='> '
 --bind '?:toggle-preview'
 --bind 'ctrl-a:select-all'
---bind 'ctrl-y:execute-silent(echo -n {+} | pbcopy)'
+--bind 'ctrl-y:execute-silent(echo -n {+} | clip)'
 --bind 'ctrl-e:execute(echo {+} | xargs -o vim)'
 "

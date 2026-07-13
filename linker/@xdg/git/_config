@@ -26,18 +26,15 @@
 	longpaths = true
 	autocrlf = input
 	trustctime = false
-	ignorecase = true
 [init]
 	defaultBranch = main
 [diff]
-    tool = default-difftool
+	tool = vimdiff
 [interactive]
 	diffFilter = delta --color-only
 [delta]
 	navigate = true
 	line-numbers = true
-[difftool "default-difftool"]
-    cmd = agy --wait --diff $REMOTE $LOCAL
 [difftool]
 	prompt = false
 [filter "lfs"]
@@ -81,8 +78,8 @@
 	sslBackend = openssl
 	postBuffer = 524288000
 [credential "https://github.com"]
-	helper = 
-	helper = !/opt/homebrew/bin/gh auth git-credential
+	helper =
+	helper = !gh auth git-credential
 [credential "https://gist.github.com"]
-	helper = 
-	helper = !/opt/homebrew/bin/gh auth git-credential
+	helper =
+	helper = !gh auth git-credential

@@ -1,8 +1,8 @@
 # dot
 
-A macOS dotfile manager built on bun and Homebrew: shell modules, selected app
-configs, package lists, and macOS defaults. Local mutable state
-lives outside the repository.
+A portable CLI environment built on Zsh, Bun, and Homebrew. It manages shell
+modules, selected app configs, and a cross-platform package list while keeping
+local mutable state outside the repository.
 
 ## Bootstrap
 
@@ -18,12 +18,39 @@ dot loader
 dot install
 ```
 
+Linux needs `zsh`, `git`, `curl`, `file`, `procps`, and the distribution's
+compiler toolchain before bootstrap. Homebrew installs under
+`/home/linuxbrew/.linuxbrew` by default; both bootstrap and shell startup
+discover that path automatically.
+
+Enter Zsh before sourcing the bootstrap (`exec zsh`), or make it the login
+shell with `chsh -s "$(command -v zsh)"` and start a new session.
+
 Source it; direct execution cannot define a function in your shell, and
 re-sourcing is safe. In every later shell, `~/.config/zsh/init.zsh` (loaded via
 the `~/.zshrc` loader) defines `dot()` for you — see [Commands](#commands).
-Homebrew packages live in `install/brew.json`;
-`dot install` installs formulae, and `dot install cask` installs optional GUI
-apps and fonts.
+Homebrew packages live in `install/brew.json`; `dot install` installs the shared
+formula list on macOS or Linux.
+
+## Compatibility
+
+- macOS and Linux share the same Zsh, XDG links, formulae, editor settings, and
+  desktop snapshot commands.
+- Linux desktop configs resolve under `~/.config`; macOS desktop configs resolve
+  under `~/Library/Application Support` where required.
+- `clip` uses `pbcopy` on macOS and `wl-copy`, `xclip`, or `xsel` on Linux.
+  Install one of those Linux clipboard tools with the system package manager.
+- `op` uses `open` on macOS and `xdg-open` or `gio open` on Linux.
+- Android defaults to `~/Android/Sdk` on Linux; Harmony activates only an
+  existing SDK root; JEB selects `jeb_linux.sh` and requires `JEB_HOME` to point
+  at an installed Linux distribution.
+- Homebrew casks and macOS defaults are intentionally absent from this branch.
+  Install GUI applications and fonts through the host system.
+- The macOS-only `mole` formula, `hidutil` Caps Lock tuning, and empty Sublime
+  OSX keymap were removed rather than carried as inactive Linux config.
+- FreeBSD is not a supported bootstrap target: Homebrew and Bun do not provide
+  the same supported installation path there. The plain config files remain
+  reusable, but the `dot` CLI cannot currently be promised end to end.
 
 ## Layout
 
@@ -33,7 +60,6 @@ loader/     tree copied into ~ — the loaders (@home → $HOME)
 desktop/    desktop app recipes (*.ts)
 backups/    saved desktop app snapshots
 install/    Homebrew package manifest
-macos/      explicit macOS defaults scripts
 kernel/     dot CLI + recipe engine
 ```
 
@@ -73,9 +99,6 @@ Roughly the order you'd run on a new machine:
 dot link                  # symlink home/ (incl. .config/) into ~
 dot loader                # place ~ loaders (backs up anything it overwrites)
 dot install               # brew install formulae from install/brew.json
-dot install cask          # optional GUI apps and fonts
-dot macos                 # macOS defaults; macos:opinionated adds personal prefs
-dot macos:opinionated
 dot doctor                # formulae tools + link state; `dot doctor cursor` for one recipe
 dot desktop               # list app recipes with snapshot state
 dot status                # drift: repo uncommitted changes + live app config vs backup
@@ -110,11 +133,10 @@ copied, not symlinked. Extension lists aren't diffed; run `save` to refresh them
 `recipe(id, app, root, options?)`:
 
 - `id` — the command name and the `backups/<id>` snapshot folder
-- `app` — the `.app` bundle name, looked up under `/Applications` and
-  `~/Applications` to decide availability
+- `app` — the display name and, on macOS, the `.app` bundle name
 - `root` — a **`$HOME`-relative** path to the app's config; `support("Code/User")`
-  targets `~/Library/Application Support/Code/User` for the common case, but any
-  path under `~` works
+  targets `~/Library/Application Support/Code/User` on macOS and
+  `~/.config/Code/User` on Linux
 - `options.files` — include patterns (names, directories, or `Bun.Glob` globs)
   relative to `root`; **omit to take everything under `root`**. A directory is
   backed up recursively, so a folder of many or unpredictably-named files just
@@ -132,7 +154,8 @@ import { recipe, support } from "../kernel/desktop/recipe"
 export default [
   // only files — list exactly what to back up
   recipe("sublime", "Sublime Text.app", support("Sublime Text/Packages/User"), {
-    files: ["Preferences.sublime-settings", "Default (OSX).sublime-keymap"],
+    files: ["Preferences.sublime-settings"],
+    available: c => c.command("subl"),
   }),
 
   // only ignore — everything under root, minus the noise
@@ -143,7 +166,7 @@ export default [
   // with hooks — save extension IDs and reinstall them on restore
   recipe("code", "Visual Studio Code.app", support("Code/User"), {
     files: ["settings.json"],
-    available: c => c.app() && c.command("code"),
+    available: c => c.command("code"),
     async save(c) {
       const ids = (await c.output("code", ["--list-extensions"])).trim()
       await c.write("extensions.txt", `${ids}\n`)

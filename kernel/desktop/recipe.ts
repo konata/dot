@@ -27,21 +27,25 @@ type Options = {
 
 export type Recipe = { id: string; app: string; root: string[]; files: string[]; ignore: string[] } & Options
 
-// root is relative to $HOME; use support() for the common ~/Library/Application Support case
+// root is relative to $HOME; support() maps app config to the platform's standard location
 export function recipe(id: string, app: string, root: string, options: Options = {}): Recipe {
   return { id, app, root: root.split("/"), ...options, files: options.files ?? [], ignore: options.ignore ?? [] }
 }
 
-// a path under ~/Library/Application Support, as a $HOME-relative root
+// macOS uses Application Support; Linux and other Unix-like systems use XDG's default root
 export function support(path: string): string {
-  return `Library/Application Support/${path}`
+  return `${process.platform === "darwin" ? "Library/Application Support" : ".config"}/${path}`
 }
 
-// VS Code-family editors live in Application Support; back up settings + the extension list via the CLI
+export function platform(paths: Record<string, string>): string {
+  return paths[process.platform] ?? paths.default
+}
+
+// VS Code-family editors use the platform support root; extensions are restored through the CLI
 export function vscodish(id: string, app: string, root: string, cli: string, files: string[] = ["settings.json"]): Recipe {
   return recipe(id, app, support(root), {
     files,
-    available: c => c.app() && c.command(cli),
+    available: c => c.command(cli),
     async save(c) {
       const ids = (await c.output(cli, ["--list-extensions"])).split(/\r?\n/).map(line => line.trim()).filter(Boolean).sort().join("\n")
       await c.write("extensions.txt", `${ids}\n`)

@@ -1,8 +1,9 @@
-#!/bin/zsh
+#!/usr/bin/env zsh
 () {
   emulate -L zsh -o errexit -o nounset -o pipefail
 
   local brew
+  local -a brews
   export DOT_HOME="${${(%):-%x}:A:h}"
 
   [[ ":${ZSH_EVAL_CONTEXT:-}:" == *:file:* ]] || {
@@ -11,14 +12,31 @@
     return 2
   }
 
-  for brew in /opt/homebrew/bin/brew /usr/local/bin/brew; do
-    command -v brew >/dev/null 2>&1 && break
+  brews=(
+    "${commands[brew]:-}"
+    /opt/homebrew/bin/brew
+    /home/linuxbrew/.linuxbrew/bin/brew
+    "$HOME/.linuxbrew/bin/brew"
+    /usr/local/bin/brew
+  )
+
+  for brew in $brews; do
+    [[ -n "$brew" ]] || continue
     [[ -x "$brew" ]] && eval "$("$brew" shellenv)"
+    command -v brew >/dev/null 2>&1 && break
   done
 
   if ! command -v brew >/dev/null 2>&1; then
+    [[ "$OSTYPE" == darwin* || "$OSTYPE" == linux* ]] || {
+      print -u2 "automatic Homebrew bootstrap is unsupported on $OSTYPE"
+      return 1
+    }
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv 2>/dev/null)"
+    for brew in $brews; do
+      [[ -n "$brew" && -x "$brew" ]] || continue
+      eval "$("$brew" shellenv)"
+      break
+    done
   fi
 
   if ! command -v brew >/dev/null 2>&1; then

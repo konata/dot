@@ -4,7 +4,6 @@ import { existsSync } from "node:fs"
 import { copyFile, lstat, mkdir, readlink, rename, rm, symlink } from "node:fs/promises"
 import { homedir } from "node:os"
 import { dirname, join, relative, resolve } from "node:path"
-import { $ } from "bun"
 import { desktop, doctor as desktopDoctor, restore as restoreDesktop, save as saveDesktop, status as desktopStatus } from "./desktop/index.js"
 import { bold, dim, green, mark, red, yellow } from "./ui.js"
 
@@ -17,12 +16,10 @@ const brewfile = join(dot, "install", "brew.json")
 function help() {
   const groups = [
     ["setup", [
-      ["install", "brew install from install/brew.json (default: formulae; pass cask/all)"],
+      ["install", "brew install formulae from install/brew.json"],
       ["link", "symlink home/ (incl. .config) into ~"],
       ["loader", "copy loader/@home/* into ~ (backs up anything it overwrites)"],
       ["unlink", "remove links owned by this tree"],
-      ["macos", "apply low-side-effect macOS defaults"],
-      ["macos:opinionated", "apply personal macOS preferences"],
     ]],
     ["desktop", [
       ["desktop", "list desktop app snapshots"],
@@ -64,11 +61,8 @@ function formula(spec) {
 
 async function brews(group = "formulae") {
   const manifest = await catalog()
-  const formulae = manifest.formulae.map(formula).map(({ name }) => name)
-  if (group === "formulae") return { formulae, cask: [] }
-  if (group === "cask") return { formulae: [], cask: manifest.cask }
-  if (group === "all") return { formulae, cask: manifest.cask }
-  throw Object.assign(new Error(`unknown install group: ${group}\nsupported install groups: ${Object.keys(manifest).join(", ")}, all`), { code: 2 })
+  if (manifest[group]) return manifest[group].map(formula).map(({ name }) => name)
+  throw Object.assign(new Error(`unknown install group: ${group}\nsupported install groups: ${Object.keys(manifest).join(", ")}`), { code: 2 })
 }
 
 async function owned(target) {
@@ -183,14 +177,8 @@ async function status(id) {
 }
 
 async function install(group = "formulae") {
-  const { formulae, cask } = await brews(group)
-
+  const formulae = await brews(group)
   if (formulae.length) run("brew", ["install", ...formulae])
-  if (cask.length) run("brew", ["install", "--cask", ...cask])
-}
-
-async function macos(file = "defaults.zsh") {
-  await $`zsh ${join(dot, "macos", file)}`
 }
 
 
@@ -201,8 +189,6 @@ const tasks = {
   link,
   loader,
   unlink,
-  macos,
-  "macos:opinionated": () => macos("opinionated.zsh"),
   restore: restoreDesktop,
   save: saveDesktop,
   status,

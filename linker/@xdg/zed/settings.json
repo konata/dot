@@ -30,11 +30,6 @@
     "diagnostics": true,
     "metrics": false,
   },
-  "terminal": {
-    "env": {
-      "FIG_NEW_SESSION": "\"1\"",
-    },
-  },
   "minimap": {
     "show": "never",
   },

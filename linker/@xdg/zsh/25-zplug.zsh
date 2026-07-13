@@ -1,4 +1,4 @@
-for init in "$HOME/.zplug/init.zsh" "$HOMEBREW_PREFIX/opt/zplug/init.zsh"; do
+for init in "$HOME/.zplug/init.zsh" "${HOMEBREW_PREFIX:+$HOMEBREW_PREFIX/opt/zplug/init.zsh}"; do
   [[ -r "$init" ]] || continue
   source "$init"
   break
@@ -21,4 +21,3 @@ zplug "dracula/zsh", as:theme
 if zplug check >/dev/null 2>&1; then
   zplug load
 fi
-

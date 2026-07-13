@@ -43,7 +43,11 @@ set autoindent
 set smartindent
 set wrap
 set laststatus=2
-set clipboard=unnamed
+if has('unnamedplus')
+  set clipboard=unnamedplus
+elseif has('clipboard')
+  set clipboard=unnamed
+endif
 set foldcolumn=1
 
 function! HasPaste() abort
@@ -137,4 +141,3 @@ augroup dot
   autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line('$') | execute "normal! g'\"" | endif
   autocmd BufWritePre *.txt,*.js,*.py,*.wiki,*.sh,*.coffee call CleanExtraSpaces()
 augroup END
-

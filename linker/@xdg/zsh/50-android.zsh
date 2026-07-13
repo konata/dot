@@ -1,4 +1,9 @@
-export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
+if [[ -z "${ANDROID_HOME:-}" ]]; then
+  case "$OSTYPE" in
+    darwin*) export ANDROID_HOME="$HOME/Library/Android/sdk" ;;
+    *)       export ANDROID_HOME="$HOME/Android/Sdk" ;;
+  esac
+fi
 export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
 export NDK_HOME="${NDK_HOME:-$ANDROID_HOME/ndk/23.1.777962}"
 

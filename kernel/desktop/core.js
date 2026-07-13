@@ -20,6 +20,7 @@ function command(name) {
 }
 
 function appPath(recipe) {
+  if (process.platform !== "darwin") return
   return [join("/Applications", recipe.app), join(home, "Applications", recipe.app)]
     .find(path => existsSync(path))
 }
@@ -74,7 +75,7 @@ function context(recipe, options = {}) {
 }
 
 async function available(recipe, state = context(recipe)) {
-  return recipe.available ? await recipe.available(state) : state.app()
+  return recipe.available ? await recipe.available(state) : state.app() || existsSync(state.target())
 }
 
 export async function list(recipes) {
@@ -91,7 +92,7 @@ export async function doctor(recipes, id) {
 
   const live = await available(recipe, state)
   console.log(bold(`${recipe.id} ${dim(`(${label(recipe)})`)}`))
-  console.log(`${dim("app ")} ${appPath(recipe) ?? red("missing")}`)
+  if (process.platform === "darwin") console.log(`${dim("app ")} ${appPath(recipe) ?? red("missing")}`)
   console.log(`${dim("root")} ${dim(state.target())}`)
   console.log(`${dim("repo")} ${dim(state.repo())}`)
   console.log(`${dim("live")} ${live ? green("yes") : red("no")}`)

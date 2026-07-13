@@ -1,9 +1,15 @@
-export HARMONY_SDK="${HARMONY_SDK:-$HOME/Library/Huawei/Sdk}"
-export HARMONY_HOME="${HARMONY_HOME:-$HARMONY_SDK}"
-export HARMONY_SDK_VERSION="${HARMONY_SDK_VERSION:-3.0.0_7}"
+if [[ -z "${HARMONY_SDK:-}" ]]; then
+  for sdk in "$HOME/Library/Huawei/Sdk" "$HOME/Huawei/Sdk" "$HOME/.local/share/Huawei/Sdk"; do
+    [[ -d "$sdk" ]] || continue
+    export HARMONY_SDK="$sdk"
+    break
+  done
+fi
 
-prepend-path "$HARMONY_HOME/default/openharmony/toolchains"
-prepend-path "/Applications/Huawei Studio.app/Contents/sdk/default/openharmony/toolchains"
+if [[ -n "${HARMONY_HOME:-${HARMONY_SDK:-}}" ]]; then
+  export HARMONY_HOME="${HARMONY_HOME:-$HARMONY_SDK}"
+  prepend-path "$HARMONY_HOME/default/openharmony/toolchains"
+fi
 
 hicat() {
   {
@@ -15,4 +21,3 @@ hicat() {
     wait "$adb_pid" "$hdc_pid"
   } | cat
 }
-
