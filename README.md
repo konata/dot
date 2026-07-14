@@ -23,7 +23,8 @@ re-sourcing is safe. In every later shell, `~/.config/zsh/init.zsh` (loaded via
 the `~/.zshrc` loader) defines `dot()` for you — see [Commands](#commands).
 Homebrew packages live in `install/brew.json`;
 `dot install` installs formulae, and `dot install cask` installs optional GUI
-apps and fonts.
+apps and fonts. Cask installs use `--adopt`, so matching apps already in
+`/Applications` are taken over by Homebrew instead of being treated as conflicts.
 
 ## Layout
 
@@ -73,7 +74,7 @@ Roughly the order you'd run on a new machine:
 dot link                  # symlink home/ (incl. .config/) into ~
 dot loader                # place ~ loaders (backs up anything it overwrites)
 dot install               # brew install formulae from install/brew.json
-dot install cask          # optional GUI apps and fonts
+dot install cask          # optional GUI apps and fonts, adopting matching local apps
 dot macos                 # macOS defaults; macos:opinionated adds personal prefs
 dot macos:opinionated
 dot doctor                # formulae tools + link state; `dot doctor cursor` for one recipe

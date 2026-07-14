@@ -186,7 +186,7 @@ async function install(group = "formulae") {
   const { formulae, cask } = await brews(group)
 
   if (formulae.length) run("brew", ["install", ...formulae])
-  if (cask.length) run("brew", ["install", "--cask", ...cask])
+  if (cask.length) run("brew", ["install", "--cask", "--adopt", ...cask])
 }
 
 async function macos(file = "defaults.zsh") {
