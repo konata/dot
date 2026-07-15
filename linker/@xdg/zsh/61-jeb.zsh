@@ -7,7 +7,7 @@ _jeb_jdk() {
   for jdk in "${JAVA_HOME:-}" /Library/Java/JavaVirtualMachines/*/Contents/Home(N); do
     [[ -x "$jdk/bin/java" ]] || continue
     version="$("$jdk/bin/java" -version 2>&1)"
-    [[ "$version" == *'version "17.'* ]] && print -r -- "$jdk" && return
+    [[ "$version" == *'version "21.'* ]] && print -r -- "$jdk" && return
   done
 }
 
