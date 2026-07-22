@@ -30,16 +30,3 @@ Name configuration by data shape, not by consumer action. Keys, fields, and opti
 
 Overall philosophy: trust the reader, trust the inputs that are actually guaranteed, trust reasonable inference, and trust the language. The preferred result is compact, idiomatic, domain-named code with a short linear main flow and very little ceremony. Every extra branch, helper, fallback, log, compatibility path, comment, or temporary variable is a claim that the reader must care about it; make that claim only when it is true.
 
-## Interface Design Style
-
-When designing product tools, admin consoles, dashboards, or utility apps for this user, default to a restrained editorial control-plane style rather than a marketing or decorative app style. The first screen should expose the working interface immediately: status, core controls, data, and editor panels should be visible without a landing-page hero.
-
-Use a warm paper-like neutral base in light mode: off-white page backgrounds, white or lightly tinted panels, near-black text, muted taupe/gray secondary text, and low-contrast borders. Use forest green as the main accent for primary actions, enabled states, focus rings, small section labels, and success/status affordances. Dark mode should mirror the same warmth with black-brown surfaces, soft muted text, and a brighter green accent. Avoid purple/blue gradient themes, ornamental blobs, bokeh, loud shadows, and one-note saturated palettes.
-
-Prefer clean, quiet typography: system or modern sans-serif fonts, compact hierarchy, strong but not oversized headings, uppercase micro-labels for section context, tabular numerals for metrics, and restrained supporting text. Use weight, spacing, and alignment to create hierarchy; avoid explanatory marketing copy inside operational surfaces.
-
-Layout should feel like a sophisticated internal tool: a max-width shell, a clear masthead, dense but breathable vertical rhythm, dashboard metrics, card-like records, and a right-side editor or inspector on desktop. On mobile, collapse to a single column, keep controls full-width where appropriate, allow long URLs and tokens to wrap safely, and make action rows touch-friendly without changing the underlying visual language.
-
-Surfaces should be simple and tactile: subtle borders, modest radius, soft shadows only on interactive elevation, compact fields, clear hover/active/focus states, and status pills for binary state. Do not nest cards inside cards. Keep repeated records scannable with name, status, URL, metadata tags, and actions aligned predictably.
-
-Motion should be functional and quiet: short easing for hover, press, loading spinners, view transitions, and state changes. Always respect reduced-motion preferences.

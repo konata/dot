@@ -1,6 +1,18 @@
 export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
 export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
-export NDK_HOME="${NDK_HOME:-$ANDROID_HOME/ndk/23.1.777962}"
+
+# Ignore incomplete SDK Manager directories and use the newest installed NDK.
+autoload -Uz is-at-least
+typeset ndk version latest
+latest=
+for ndk in "$ANDROID_HOME"/ndk/*(N/); do
+  [[ -r "$ndk/source.properties" ]] || continue
+  version="${ndk:t}"
+  [[ -z "$latest" ]] || is-at-least "$latest" "$version" || continue
+  latest="$version"
+done
+[[ -n "$latest" ]] && export NDK_HOME="$ANDROID_HOME/ndk/$latest" || unset NDK_HOME
+unset ndk version latest
 
 for tool in platform-tools build-tools/34.0.0 emulator cmdline-tools/latest/bin; do
   prepend-path "$ANDROID_HOME/$tool"
