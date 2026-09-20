@@ -113,3 +113,49 @@ sps() {
   done
 }
 
+vlog() {
+  adb shell '
+    tail_pid=
+    previous_pid=
+
+    cleanup() {
+      [ -z "$tail_pid" ] || kill "$tail_pid" 2>/dev/null
+      [ -z "$previous_pid" ] || kill "$previous_pid" 2>/dev/null
+    }
+
+    trap cleanup EXIT
+    trap "exit 130" INT
+    trap "exit 143" TERM HUP
+
+    current=
+    first=1
+
+    while :; do
+      dir="$(ls -td /data/debuglogger/mobilelog/APLog_* 2>/dev/null | head -n 1)"
+      next="$(ls -t "$dir"/main_log*.curf 2>/dev/null | head -n 1)"
+
+      if [ -n "$next" ] && [ "$next" != "$current" ]; then
+        echo "Following: $next" >&2
+
+        if [ "$first" = 1 ]; then
+          tail -n 0 -f "$next" &
+          tail_pid=$!
+          first=0
+        else
+          previous_pid=$tail_pid
+          tail -n +1 -f "$next" &
+          tail_pid=$!
+
+          sleep 1
+          kill "$previous_pid" 2>/dev/null
+          wait "$previous_pid" 2>/dev/null
+          previous_pid=
+        fi
+
+        current="$next"
+      fi
+
+      sleep 1
+    done
+  '
+}

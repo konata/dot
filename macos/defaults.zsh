@@ -42,6 +42,8 @@ defaults write com.apple.dock launchanim -bool false
 defaults write com.apple.dock autohide -bool true
 defaults write com.Apple.Dock show-recents -bool false
 
+sudo systemsetup -settimezone Asia/Taipei >/dev/null
+
 for app in Dock Finder SystemUIServer; do
   killall "$app" >/dev/null 2>&1 || true
 done

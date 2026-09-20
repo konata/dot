@@ -1,8 +1,9 @@
-export HARMONY_SDK="${HARMONY_SDK:-$HOME/Library/Huawei/Sdk}"
-export HARMONY_HOME="${HARMONY_HOME:-$HARMONY_SDK}"
 export HARMONY_SDK_VERSION="${HARMONY_SDK_VERSION:-3.0.0_7}"
+export HARMONY_SDK="${HARMONY_SDK:-$HOME/HarmonySDK/$HARMONY_SDK_VERSION}"
+export HARMONY_HOME="${HARMONY_HOME:-$HARMONY_SDK}"
 
-prepend-path "$HARMONY_HOME/default/openharmony/toolchains"
+# Studio (NEXT) hdc stays primary in PATH; the hybrid 3.x toolchains follow.
+prepend-path "$HARMONY_SDK/toolchains"
 prepend-path "/Applications/Huawei Studio.app/Contents/sdk/default/openharmony/toolchains"
 
 hicat() {
