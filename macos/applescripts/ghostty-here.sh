@@ -13,4 +13,8 @@ end tell
 return POSIX path of (path to home folder)
 AS
 )
-open -na Ghostty --args --working-directory="$dir"
+# Forward the folder via LaunchServices: reuses the running instance (new
+# window there). Never use `open -na … --args` — `-n` spawns a whole new
+# app instance every call, and each instance registers its own global
+# quick-terminal hotkey, so ctrl+` ends up toggling N quake windows.
+open -a Ghostty "$dir"
