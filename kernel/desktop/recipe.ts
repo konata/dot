@@ -1,3 +1,6 @@
+import { homedir, tmpdir } from "node:os"
+import { join } from "node:path"
+
 export type Context = {
   dry: boolean
   quiet: boolean
@@ -35,6 +38,40 @@ export function recipe(id: string, app: string, root: string, options: Options =
 // a path under ~/Library/Application Support, as a $HOME-relative root
 export function support(path: string): string {
   return `Library/Application Support/${path}`
+}
+
+// keys the app rewrites on its own — telemetry and update checks — stripped so snapshots stay diffable
+const churn = /^MSAppCenter|^SULastCheckTime$/
+
+// GUI apps configured entirely through defaults: settings snapshotted as xml1
+// text (churn keys stripped via a scratch copy) and restored via defaults
+// import, which overlays without clobbering live churn. files names support-dir
+// subtrees worth capturing beyond the plist; without it nothing under the
+// support root is tracked.
+export function plistish(id: string, app: string, domain: string, files: string[] = [], volatile: RegExp = churn): Recipe {
+  const plist = join(homedir(), `Library/Preferences/${domain}.plist`)
+  const scratch = join(tmpdir(), `dot-${id}.plist`)
+  return recipe(id, app, support(domain), {
+    files,
+    ignore: files.length ? [] : ["**"],
+    async save(c) {
+      const xml = await c.output("plutil", ["-convert", "xml1", "-o", "-", plist])
+      const churned = [...xml.matchAll(/<key>([^<]+)<\/key>/g)].map(([, key]) => key).filter(key => volatile.test(key))
+      if (!churned.length) return c.write("settings.plist", xml)
+      await Bun.write(scratch, xml)
+      for (const key of churned) await c.run("plutil", ["-remove", key, scratch])
+      await c.write("settings.plist", await Bun.file(scratch).text())
+    },
+    async restore(c) {
+      await c.run("defaults", ["import", domain, c.repo("settings.plist")])
+    },
+    async ["@save"](c) {
+      await c.write("settings.plist")
+    },
+    async ["@restore"](c) {
+      if (c.exists("settings.plist")) console.log(`restore defaults from ${c.repo("settings.plist")}`)
+    },
+  })
 }
 
 // VS Code-family editors live in Application Support; back up settings + the extension list via the CLI
