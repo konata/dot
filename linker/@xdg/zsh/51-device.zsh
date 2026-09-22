@@ -17,9 +17,9 @@ _device_state() {
   adb shell "$@" >"$target" 2>/dev/null || rm -f "$target"
 }
 
-clone() {
+_clone() {
   local root="$1"
-  [[ -n "$root" ]] || { echo "usage: clone ROOT" >&2; return 2; }
+  [[ -n "$root" ]] || { echo "usage: _clone ROOT" >&2; return 2; }
   mkdir -p "$root"
 
   adb shell '
@@ -37,9 +37,9 @@ clone() {
   done
 }
 
-snapshot() {
+_snapshot() {
   local root="$1"
-  [[ -n "$root" ]] || { echo "usage: snapshot ROOT" >&2; return 2; }
+  [[ -n "$root" ]] || { echo "usage: _snapshot ROOT" >&2; return 2; }
   mkdir -p "$root"
 
   _device_state "$root" permissions.txt pm list permissions -f

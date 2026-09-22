@@ -57,9 +57,9 @@ font-thicken = true
 adjust-cell-height = 6
 
 # --- Theme and Colors ---
-theme = Ayu Light
+theme = Ayu
 background-opacity = 1
-macos-titlebar-style = transparent
+macos-titlebar-style = native
 window-padding-x = 14
 window-padding-y = 10
 window-save-state = never
@@ -124,6 +124,6 @@ keybind = cmd+shift+f=toggle_split_zoom
 
 keybind = cmd+shift+comma=reload_config
 scrollback-limit = 25000000
-
+macos-icon = blueprint
 
 
