@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>MacKedTeamTips</key>
+	<string>11.7.0</string>
+	<key>NSStatusItem VisibleCC Item-0</key>
+	<false/>
+	<key>NSWindow Frame AboutWindow2</key>
+	<string>1314 909 380 450 0 0 3008 1662 </string>
+	<key>NSWindow Frame PermissionsWindow</key>
+	<string>1243 970 521 368 0 0 3008 1662 </string>
+	<key>NSWindow Frame SettingsWindow</key>
+	<string>1277 348 933 835 0 0 3008 1662 </string>
+	<key>SUAutomaticallyUpdate</key>
+	<false/>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUHasLaunchedBefore</key>
+	<true/>
+	<key>SUUpdateGroupIdentifier</key>
+	<integer>4011900557</integer>
+	<key>appearanceStyle</key>
+	<string>2</string>
+	<key>appearanceStyleOverride</key>
+	<string>2</string>
+	<key>appsToShow</key>
+	<string>0</string>
+	<key>captureWindowsInBackground</key>
+	<string>false</string>
+	<key>holdShortcut</key>
+	<dict>
+		<key>secureData</key>
+		<data>
+		YnBsaXN0MDDUAQIDBAUGBwpYJHZlcnNpb25ZJGFyY2hpdmVyVCR0b3BYJG9i
+		amVjdHMSAAGGoF8QD05TS2V5ZWRBcmNoaXZlctEICVRyb290gAGlCwwZGhtV
+		JG51bGzWDQ4PEBESExQVFBcUXW1vZGlmaWVyRmxhZ3NfEBtjaGFyYWN0ZXJz
+		SWdub3JpbmdNb2RpZmllcnNWJGNsYXNzWmNoYXJhY3RlcnNXa2V5Q29kZVd2
+		ZXJzaW9ugAOAAIAEgACAAoAAEf//EgAQAADSHB0eH1okY2xhc3NuYW1lWCRj
+		bGFzc2VzWlNSU2hvcnRjdXSiHiBYTlNPYmplY3QIERokKTI3SUxRU1lfbHqY
+		n6qyury+wMLExsnO097n8vUAAAAAAAABAQAAAAAAAAAhAAAAAAAAAAAAAAAA
+		AAAA/g==
+		</data>
+		<key>string</key>
+		<string>⌘</string>
+	</dict>
+	<key>menubarIconShown</key>
+	<string>false</string>
+	<key>preferencesVersion</key>
+	<string>11.7.0</string>
+	<key>previewFocusedWindow</key>
+	<string>false</string>
+	<key>screensToShow</key>
+	<string>1</string>
+	<key>settingsWindowShownOnFirstLaunch</key>
+	<string>true</string>
+	<key>shortcutCount</key>
+	<string>1</string>
+	<key>shortcutStyle</key>
+	<string>0</string>
+	<key>showHiddenWindows</key>
+	<string>1</string>
+	<key>showOnScreen</key>
+	<string>1</string>
+	<key>showWindowlessApps</key>
+	<string>1</string>
+	<key>spacesToShow</key>
+	<string>1</string>
+	<key>updatePolicy</key>
+	<string>1</string>
+</dict>
+</plist>
