@@ -46,6 +46,13 @@ So the tree self-describes its mapping: `linker/@xdg/git/_config` →
 config), `loader/` is copied (the loaders, which absorb local edits so they never
 dirty the repo).
 
+Ghostty is managed directly by `linker/@xdg/ghostty/config`, which `dot link`
+symlinks to `~/.config/ghostty/config`. Config edits are tracked in Git immediately;
+there is no desktop recipe or snapshot to save or restore. Keep active config
+files out of `~/Library/Application Support/com.mitchellh.ghostty/`, since
+[Ghostty also loads that location](https://ghostty.org/docs/config#file-location)
+and its settings can override XDG settings.
+
 Each `~` config file is a thin **loader**: it pulls in the tracked core under
 `linker/@xdg/` — the zsh modules in `linker/@xdg/zsh/`, or the `_`-prefixed files
 (`linker/@xdg/git/_config`, `linker/@xdg/vim/_vimrc`). Third-party edits and tool
@@ -94,7 +101,7 @@ dot unlink                # remove every symlink this repo owns
 
 Desktop app recipes live in `desktop/*.ts` and are discovered automatically; each
 calls the typed `recipe()` factory (`kernel/desktop/recipe.ts`). Snapshots are
-stored in `backups/<app>`. Supported apps are currently `code`, `cursor`, `ghostty`,
+stored in `backups/<app>`. Supported apps are currently `code`, `cursor`,
 `kiro`, and `sublime`.
 
 `save <app>` diffs each file against its backup and copies only what changed,
